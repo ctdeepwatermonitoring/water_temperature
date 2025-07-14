@@ -243,6 +243,7 @@ fun.QC <- function(fun.myData.SiteID
     data.import <- utils::read.csv(file.path(myDir.data.import,strFile)
                                    ,as.is=TRUE
                                    ,na.strings=c("","NA"))
+
     #
     # QC required fields: SiteID & (DateTime | (Date & Time))
     fun.QC.ReqFlds(names(data.import),paste(myDir.data.import,strFile,sep="/"))
@@ -357,6 +358,7 @@ fun.QC <- function(fun.myData.SiteID
     myField   <- ContData.env$myName.Date
     data.import[,myField][all(is.na(data.import[,myField]))] <- data.import[
                                                   ,ContData.env$myName.DateTime]
+    
     # Time
     myField   <- ContData.env$myName.Time
     data.import[,myField][all(is.na(data.import[,myField]))] <- data.import[
@@ -1114,7 +1116,6 @@ fun.QC <- function(fun.myData.SiteID
     # if data is offset can create extra rows in above QC checks
     data.import <- unique(data.import)
 
-
     #*********************
     # START QC manual stuff
     #************************
@@ -1190,7 +1191,7 @@ fun.QC <- function(fun.myData.SiteID
     #utils::flush.console()
     #write.csv(data.import,file=paste(myDir.data.export,"/",strFile.Out,sep=""),quote=FALSE,row.names=FALSE)
     utils::write.csv(data.import,file = file.path(myDir.data.export, strFile.Out)
-                     ,quote=FALSE
+                     ,quote=TRUE
                      ,row.names=FALSE)
     #
 #     # B.11. Clean up

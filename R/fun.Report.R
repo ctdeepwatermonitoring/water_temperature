@@ -165,6 +165,9 @@ fun.Report <- function(fun.myData.SiteID
     # use provided dir for template
     #strFile.RMD <- file.path(fun.myReport.Dir, paste0(myReport.Name, "_"
     # , fun.myReport.format, ".rmd"))
+    
+    #strFile.RMD = "/home/deepuser/ContDataQC/rmd/Report_QC.rmd"
+    #REMEMBER TO UNCOMMENT THE BELOW LINE AND GET RID OF THE UPPER LINE LATER ONCE THIS IS PUSHED TO GITHUB -Alex Towle
     strFile.RMD <- file.path(fun.myReport.Dir, paste0(myReport.Name, ".rmd"))
     strFile.out.ext <- paste0(".",fun.myReport.format) #".docx" # ".html"
     strFile.out <- paste(paste(strFile.Prefix
@@ -184,6 +187,7 @@ fun.Report <- function(fun.myData.SiteID
     # Test if RMD file exists
     if (file.exists(strFile.RMD)){##IF.file.exists.START
       #suppressWarnings(
+      
       rmarkdown::render(strFile.RMD, output_format=strFile.RMD.format
                         , output_file=strFile.out, output_dir=fun.myDir.export
                         , quiet=TRUE)

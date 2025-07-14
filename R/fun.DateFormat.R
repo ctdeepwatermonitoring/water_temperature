@@ -83,6 +83,7 @@ fun.DateTimeFormat <- function(fun.DateTime, fun.dt.Type) { ##FUN.START
                                     ,pattern.delim.white
                                     ,perl=TRUE))) #create data frame from split
     # if AM/PM will have 3 columns so make col names appropriate
+    #print(dt)
     if(ncol(dt.split.datetime)==3) {##IF.ncol.START
       # make new field
       dt.split.datetime[,4] <- paste(dt.split.datetime[,2]
