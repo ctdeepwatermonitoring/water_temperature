@@ -1,0 +1,52 @@
+Alexander Towle
+Alexander.Towle@ct.gov
+2025-07-07
+Documentation of Data Cleaning
+
+Step 1: Standardize Unit of Measure
+Any row with uom that is not "Degrees C" is converted to "Degrees C".
+Rows containing uom that were not "Degrees C" were inspected to make sure they fall within expected Celsius values.
+All of them do.
+
+Step 2: Remove "QA post deploy" from the parameter
+Rows featuring the value "QA post deploy" indicate a reading when the probe was out of the water.
+All rows with a parameter of "QA post deploy" were dropped.
+
+Step 3: Standardizing parameter column.
+The remaining issues with the parameter column are that there are some spots where the paramter is NA and some where capitalization and spelling of "Water Temperature" differ.
+We don't test for anything besides water temperature so all the NA values are filled it with "Water Temperature".
+Additionally, any non-NA value not matching "Water Temperature" is converted to that.
+
+Step 4: Remove negative probes
+Some probes are obviously dummy values, such as probes with negative numbers (ex. -1, -123456).
+There rows are dropped.
+
+Step 5: Remove positive dummy value probes
+There is one additional probe that is 123456.
+This is clearly a dummy value and the rows were dropped.
+
+Step 6: Drop where probe is NA
+probeID, staSeq, mDate, and mTime compose the primary key and must have actual values.
+Where probe is NA is dropped.
+
+Step 7: Converting NA comments to "None" and NA createDates to "Missing"
+Some rows have no comment or createDates.
+This is fine since they aren't vital pieces of information, but having NA in a column will cause the program to crash.
+NAs are converted to a string "None" or "Missing" to avoid this.
+
+Step 8: Converting all mTime to 24 hour time
+There are spots where mTime is just a date (ex. 12/16/2007).
+After exploring the data it was determined that these are all spots meant to be 00:00:00 but there was some sort of conversion error.
+All these values are converted to "00:00:00"
+There are also mTime values that have AM or PM.
+All these values are converted to 24-hour time (ex. 01:00:00 PM -> 13:00:00).
+There are also values that include a date as well as a time.
+All these values are converted to 24-hour time and drop their date (ex. 12/15/2007 01:00:00 PM -> 13:00:00).
+
+Step 9: Dropping duplicates
+Some probes produce duplicate readings with different time formats and createDates.
+ex.
+probeID staSeq  mDate       mTime                   paramter            temp    uom         createDate          comment
+2238339 14444   2010-10-13  10/13/2010 6:00:00 PM   Water Temperature   12.92   Degrees C   2011-05-18 00:00:00 NA
+2238339 14444   2010-10-13  6:00:00 PM              Water Temperature   12.92   Degrees C   2012-02-06 00:00:00 NA
+Because times were standardized in Step 7, the duplicates can be dropped.
