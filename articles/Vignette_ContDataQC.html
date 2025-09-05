@@ -86,7 +86,7 @@
       <h1 data-toc-skip>ContDataQC Vignette</h1>
                         <h4 data-toc-skip class="author">Erik W. Leppo</h4>
             
-            <h4 data-toc-skip class="date">2025-07-14</h4>
+            <h4 data-toc-skip class="date">2025-09-05</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/USEPA/ContDataQC/blob/main/vignettes/Vignette_ContDataQC.Rmd" class="external-link"><code>vignettes/Vignette_ContDataQC.Rmd</code></a></small>
       <div class="hidden name"><code>Vignette_ContDataQC.Rmd</code></div>
@@ -270,7 +270,7 @@ This necessitated a change in the R library <code>dataRetrieval</code>. As of th
 <span>                   , <span class="st">"Data3_Aggregated"</span></span>
 <span>                   , <span class="st">"Data4_Stats"</span><span class="op">)</span></span>
 <span><span class="op">(</span><span class="va">myDir.BASE</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="co"># create and print temp directory for example data</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] "/var/folders/y6/nj790rtn62lfktb1sh__79hc0000gn/T//RtmpBSWM1m"</span></span></code></pre>
+<pre><code><span><span class="co">## [1] "/var/folders/x7/ch5v91h56_zbvbd1y2f600dm0000gn/T//RtmpI621J3"</span></span></code></pre>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Create data directories</span></span>
 <span><span class="va">myDir.create</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">myDir.BASE</span>, <span class="va">Selection.SUB</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span>
@@ -319,7 +319,10 @@ This necessitated a change in the R library <code>dataRetrieval</code>. As of th
 <span>           , <span class="va">myDir.import</span></span>
 <span>           , <span class="va">myDir.export</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] "Total items to process = 1"</span></span></code></pre>
-<pre><code><span><span class="co">## GET:https://waterservices.usgs.gov/nwis/site/?seriesCatalogOutput=true&amp;sites=01187300</span></span></code></pre>
+<pre><code><span><span class="co">## Warning in dataRetrieval::whatNWISdata(siteNumber = strGage, service = "uv"):</span></span>
+<span><span class="co">## NWIS servers are slated for decommission. Please begin to migrate to</span></span>
+<span><span class="co">## read_waterdata_ts_meta</span></span></code></pre>
+<pre><code><span><span class="co">## GET: https://waterservices.usgs.gov/nwis/site/?seriesCatalogOutput=true&amp;sites=01187300</span></span></code></pre>
 <pre><code><span><span class="co">## </span></span>
 <span><span class="co">## [1] "Getting available data; 01187300."</span></span>
 <span><span class="co">## </span></span>
@@ -327,21 +330,21 @@ This necessitated a change in the R library <code>dataRetrieval</code>. As of th
 <span><span class="co">## 530      USGS 01187300 HUBBARD RIVER NEAR WEST HARTLAND, CT         ST</span></span>
 <span><span class="co">## 531      USGS 01187300 HUBBARD RIVER NEAR WEST HARTLAND, CT         ST</span></span>
 <span><span class="co">##     dec_lat_va dec_long_va coord_acy_cd dec_coord_datum_cd alt_va alt_acy_va</span></span>
-<span><span class="co">## 530    42.0375   -72.93933            H              NAD83 594.57       0.01</span></span>
-<span><span class="co">## 531    42.0375   -72.93933            H              NAD83 594.57       0.01</span></span>
-<span><span class="co">##     alt_datum_cd   huc_cd data_type_cd parm_cd stat_cd ts_id loc_web_ds</span></span>
-<span><span class="co">## 530       NGVD29 01080207           uv   00060    &lt;NA&gt; 66866         NA</span></span>
-<span><span class="co">## 531       NGVD29 01080207           uv   00065    &lt;NA&gt; 66867         NA</span></span>
+<span><span class="co">## 530    42.0375   -72.93933            H              NAD83 594.57          0</span></span>
+<span><span class="co">## 531    42.0375   -72.93933            H              NAD83 594.57          0</span></span>
+<span><span class="co">##     alt_datum_cd       huc_cd data_type_cd parm_cd stat_cd ts_id loc_web_ds</span></span>
+<span><span class="co">## 530       NGVD29 010802070301           uv   00060    &lt;NA&gt; 66866         NA</span></span>
+<span><span class="co">## 531       NGVD29 010802070301           uv   00065    &lt;NA&gt; 66867         NA</span></span>
 <span><span class="co">##     medium_grp_cd parm_grp_cd   srs_id access_cd begin_date   end_date count_nu</span></span>
-<span><span class="co">## 530           wat        &lt;NA&gt;  1645423         0 1990-10-01 2025-07-14    12705</span></span>
-<span><span class="co">## 531           wat        &lt;NA&gt; 17164583         0 2007-10-01 2025-07-14     6496</span></span></code></pre>
-<pre><code><span><span class="co">## GET:https://nwis.waterservices.usgs.gov/nwis/iv/?site=01187300&amp;format=waterml%2C1.1&amp;ParameterCd=00060%2C00065&amp;startDT=2013-01-01&amp;endDT=2014-12-31</span></span></code></pre>
+<span><span class="co">## 530           wat        &lt;NA&gt;  1645423         0 1990-10-01 2025-09-05    12758</span></span>
+<span><span class="co">## 531           wat        &lt;NA&gt; 17164583         0 2007-10-01 2025-09-05     6549</span></span></code></pre>
+<pre><code><span><span class="co">## GET: https://nwis.waterservices.usgs.gov/nwis/iv/?site=01187300&amp;format=waterml%2C1.1&amp;ParameterCd=00060%2C00065&amp;startDT=2013-01-01&amp;endDT=2014-12-31</span></span></code></pre>
 <pre><code><span><span class="co">## </span></span>
 <span><span class="co">## [1] "Processing item 1 of 1, COMPLETE, 01187300."</span></span>
 <span><span class="co">## </span></span>
-<span><span class="co">## [1] "Task COMPLETE; 0.12 min."</span></span></code></pre>
+<span><span class="co">## [1] "Task COMPLETE; 0.09 min."</span></span></code></pre>
 <p>Example of getting gage data in a different time zone specified in user modified configuration file.</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/USEPA/ContDataQC" class="external-link">ContDataQC</a></span><span class="op">)</span></span>
 <span><span class="co"># Parameters</span></span>
 <span><span class="va">Selection.Operation</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"GetGageData"</span>,<span class="st">"QCRaw"</span>, <span class="st">"Aggregate"</span>, <span class="st">"SummaryStats"</span><span class="op">)</span></span>
@@ -376,7 +379,7 @@ This necessitated a change in the R library <code>dataRetrieval</code>. As of th
 <h4 id="qcraw">QCRaw<a class="anchor" aria-label="anchor" href="#qcraw"></a>
 </h4>
 <p>This is operation is the main focus of the <code>ContDataQC</code> library. The raw continuous data files are examined for multiple QC tests and the results saved in a new data file (CSV) and a summary report (DOCX file) are generated.</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/USEPA/ContDataQC" class="external-link">ContDataQC</a></span><span class="op">)</span></span>
 <span><span class="co"># Parameters</span></span>
 <span><span class="va">Selection.Operation</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"GetGageData"</span></span>
@@ -409,7 +412,7 @@ This necessitated a change in the R library <code>dataRetrieval</code>. As of th
 <span>           , fun.myReport.format <span class="op">=</span> <span class="va">myReport.format</span><span class="op">)</span></span></code></pre></div>
 <p>In some cases two sensors are used (one for air and one for water) and the timing of the sampling is off between the two. The library handles this fine.<br>
 Example data below. For this example the report output was changed to “html”.</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/USEPA/ContDataQC" class="external-link">ContDataQC</a></span><span class="op">)</span></span>
 <span><span class="co"># Parameters</span></span>
 <span><span class="va">Selection.Operation</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"GetGageData"</span>,<span class="st">"QCRaw"</span>, <span class="st">"Aggregate"</span>, <span class="st">"SummaryStats"</span><span class="op">)</span></span>
@@ -442,7 +445,7 @@ Example data below. For this example the report output was changed to “html”
 <h4 id="aggregate">Aggregate<a class="anchor" aria-label="anchor" href="#aggregate"></a>
 </h4>
 <p>After QC the files are ready for analysis. The Aggregate operation allows the user to combine (or split) files across time periods. No report format was specified so the default “docx” format will be generated.</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">contDataQC</span><span class="op">)</span></span>
 <span><span class="co"># Parameters</span></span>
 <span><span class="va">Selection.Operation</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"GetGageData"</span></span>
@@ -478,7 +481,7 @@ Example data below. For this example the report output was changed to “html”
 <h4 id="summarystats">SummaryStats<a class="anchor" aria-label="anchor" href="#summarystats"></a>
 </h4>
 <p>The SummaryStats operation calculates a number of statistics on the data for each sampling day. No report format was specified so the default “docx” format will be generated.</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/USEPA/ContDataQC" class="external-link">ContDataQC</a></span><span class="op">)</span></span>
 <span><span class="co"># Parameters</span></span>
 <span><span class="va">Selection.Operation</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"GetGageData"</span></span>
@@ -515,7 +518,7 @@ Example data below. For this example the report output was changed to “html”
 <h3 id="single-file-versions-of-contdataqc-operatations">Single File Versions of ContDataQC Operatations<a class="anchor" aria-label="anchor" href="#single-file-versions-of-contdataqc-operatations"></a>
 </h3>
 <p>The base version of the ContDataQC() function searches the specified directories for files that match the data type and date range. This set up does not work for everyone. Included in the <code>ContDataQC</code> package are “file” versions of the same QCRaw, Aggregate, and SummaryStat functions. These work on a vector of file names (so multiple files can be processed this way).Different report options are used in each example in the code below.</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/USEPA/ContDataQC" class="external-link">ContDataQC</a></span><span class="op">)</span></span>
 <span><span class="co">#~~~~~~~~~~~~~~</span></span>
 <span><span class="co"># File Versions</span></span>
@@ -1329,7 +1332,7 @@ Example data below. For this example the report output was changed to “html”
 <p>The input is output of the QC function in ContDataQC. That is, a file with SiteID, Date, Time, Date.Time, and parameters.</p>
 <p>To get different periods (30, 60, or 90 days) change function input “fun.myPeriod.N”. It is possible to provide a vector for Period.N and Period.Units.</p>
 <p>The function returns a csv with daily means and a PDF summary with plots into the specified export directory for the specified time period before the given date.</p>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/USEPA/ContDataQC" class="external-link">ContDataQC</a></span><span class="op">)</span></span>
 <span><span class="op">(</span><span class="va">myDir.BASE</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="co"># create and print temp directory for example data</span></span>
 <span><span class="co"># Save example file</span></span>
@@ -1373,7 +1376,7 @@ Example data below. For this example the report output was changed to “html”
 <p>The function Export.IHA() allows for the formatting of data for use with the Nature Conservancy’s IHA program as converted to R.</p>
 <p><a href="https://www.conservationgateway.org/ConservationPractices/Freshwater/EnvironmentalFlows/MethodsandTools/IndicatorsofHydrologicAlteration/Pages/indicators-hydrologic-alt.aspx" class="external-link uri">https://www.conservationgateway.org/ConservationPractices/Freshwater/EnvironmentalFlows/MethodsandTools/IndicatorsofHydrologicAlteration/Pages/indicators-hydrologic-alt.aspx</a></p>
 <p><a href="https://github.com/jasonelaw/iha" class="external-link uri">https://github.com/jasonelaw/iha</a></p>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/USEPA/ContDataQC" class="external-link">ContDataQC</a></span><span class="op">)</span></span>
 <span><span class="op">(</span><span class="va">myDir.BASE</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="co"># create and print temp directory for example data</span></span>
 <span></span>
@@ -1410,14 +1413,14 @@ Example data below. For this example the report output was changed to “html”
 <span>                         <span class="op">)</span></span></code></pre></div>
 <p>The example code below runs the data (generated above) through IHA package.<br>
 This example makes use of the <code>XLConnect</code> R library to save the IHA output into a single Excel file. Before running the IHA code the <code>IHA</code> and <code>XLConnect</code> packages need to be installed. The <code>devtools</code> package allows for easy installation from GitHub (where the IHA package resides).</p>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Install Libraries (if needed)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://devtools.r-lib.org/" class="external-link">devtools</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"jasonelaw/IHA"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"XLConnect"</span><span class="op">)</span></span></code></pre></div>
 <p>IHA example code below that uses the IHA.Export file and produces an Excel file of the IHA output.</p>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span></span>
 <span><span class="co"># 3. Run IHA</span></span>
 <span><span class="co"># Example using returned DF with IHA</span></span>
@@ -1488,7 +1491,7 @@ This example makes use of the <code>XLConnect</code> R library to save the IHA o
 <p>At times benthic samples include more individuals than the target number or when combining data from multiple programs it is necessary to subsample all samples down to a common number. The rarify funtion is part of the RIVPACS set of R scripts written by USEPA Corvallis. The rarify function is in the package BioMonTools. The example below is from the help file from that package. The BioMonTools package should install with the ContDataQC package.</p>
 <p><a href="https://github.com/leppott/BioMonTools" class="external-link uri">https://github.com/leppott/BioMonTools</a></p>
 <p>The function takes a three column data frame (SampleID, TaxonID, Count) and returns a similar dataframe with revised Counts.</p>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">BioMonTools</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Subsample to 500 organisms (from over 500 organisms) for 12 samples.</span></span>
@@ -1523,7 +1526,7 @@ This example makes use of the <code>XLConnect</code> R library to save the IHA o
 <p>An Excel file is included in the folder of the library that allows for the plotting of up to five years of data for water temperature, sensor depth, and air temperature.</p>
 <p>The daily values from the SummaryStats operation of the ContDataQC() function can be copied into the Excel file and the plots are auto-updated.</p>
 <p>These plots could be created in R but the Excel file was included to make the plots available to a wider audience.</p>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="op">(</span><span class="va">myDir.BASE</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="co"># create and print temp directory for example data</span></span>
 <span><span class="co"># Parameters</span></span>
 <span><span class="va">Selection.Operation</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"GetGageData"</span>,<span class="st">"QCRaw"</span>, <span class="st">"Aggregate"</span>, <span class="st">"SummaryStats"</span><span class="op">)</span></span>
@@ -1558,13 +1561,13 @@ The data input for StreamThermal is a data frame with five columns (SiteID, Date
 <p>The <code>StreamThermal</code> library is only available on GitHub.</p>
 <p><a href="https://github.com/tsangyp/StreamThermal" class="external-link uri">https://github.com/tsangyp/StreamThermal</a></p>
 <p>Install instructions for the <code>StreamThermal</code> library are below.</p>
-<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Install Libraries (if needed)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://devtools.r-lib.org/" class="external-link">devtools</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"tsangyp/StreamThermal"</span><span class="op">)</span></span></code></pre></div>
 <p>The <code>StreamThermal</code> package is set up to work with USGS gage data and this can be downloaded via the <code>dataRetrieval</code> library (as shown in the examples in the <code>StreamThermal</code> library).</p>
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># 1.1. Get USGS data</span></span>
 <span><span class="co"># code from StreamThermal T_frequency example</span></span>
 <span><span class="va">ExUSGSStreamTemp</span> <span class="op">&lt;-</span> <span class="fu">dataRetrieval</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/dataRetrieval/man/readNWISdv.html" class="external-link">readNWISdv</a></span><span class="op">(</span><span class="st">"01382310"</span></span>
@@ -1572,8 +1575,11 @@ The data input for StreamThermal is a data frame with five columns (SiteID, Date
 <span>                                              ,<span class="st">"2011-01-01"</span></span>
 <span>                                              ,<span class="st">"2011-12-31"</span></span>
 <span>                                              ,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"00001"</span>,<span class="st">"00002"</span>,<span class="st">"00003"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## GET:https://waterservices.usgs.gov/nwis/dv/?site=01382310&amp;format=waterml%2C1.1&amp;ParameterCd=00010&amp;StatCd=00001%2C00002%2C00003&amp;startDT=2011-01-01&amp;endDT=2011-12-31</span></span></code></pre>
-<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<pre><code><span><span class="co">## Warning in dataRetrieval::readNWISdv("01382310", "00010", "2011-01-01", : NWIS</span></span>
+<span><span class="co">## servers are slated for decommission. Please begin to migrate to</span></span>
+<span><span class="co">## read_waterdata_daily.</span></span></code></pre>
+<pre><code><span><span class="co">## GET: https://waterservices.usgs.gov/nwis/dv/?site=01382310&amp;format=waterml%2C1.1&amp;ParameterCd=00010&amp;StatCd=00001%2C00002%2C00003&amp;startDT=2011-01-01&amp;endDT=2011-12-31</span></span></code></pre>
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sitedata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">ExUSGSStreamTemp</span></span>
 <span>                   , select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"site_no"</span></span>
 <span>                                ,<span class="st">"Date"</span></span>
@@ -1636,7 +1642,7 @@ The data input for StreamThermal is a data frame with five columns (SiteID, Date
 </tbody>
 </table>
 <p>It is possible to use data that has been summarized with SummaryStats.</p>
-<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/USEPA/ContDataQC" class="external-link">ContDataQC</a></span><span class="op">)</span></span>
 <span><span class="co"># 1.2. Use Unsummarrized data</span></span>
 <span><span class="va">myFile</span> <span class="op">&lt;-</span> <span class="st">"DATA_test2_Aw_20130101_20141231.csv"</span></span>
@@ -1704,7 +1710,7 @@ The data input for StreamThermal is a data frame with five columns (SiteID, Date
 </tbody>
 </table>
 <p>It is also possible to use data that has been calculated by Period Stats.</p>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/USEPA/ContDataQC" class="external-link">ContDataQC</a></span><span class="op">)</span></span>
 <span><span class="co"># 1.3. Use user data that has been QCed</span></span>
 <span><span class="va">myData</span>   <span class="op">&lt;-</span> <span class="va">DATA_period_test2_Aw_20130101_20141231</span></span>
@@ -1764,7 +1770,7 @@ The data input for StreamThermal is a data frame with five columns (SiteID, Date
 </tbody>
 </table>
 <p>Run StreamThermal functions with ‘sitedata’. The example below saves the output to a variable.</p>
-<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span></span>
 <span><span class="co"># 3. Run StreamThermal</span></span>
 <span><span class="co"># Example using returned DF with StreamThermal</span></span>
@@ -1779,7 +1785,7 @@ The data input for StreamThermal is a data frame with five columns (SiteID, Date
 <span><span class="va">ST.tim</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/StreamThermal/man/T_timing.html" class="external-link">T_timing</a></span><span class="op">(</span><span class="va">sitedata</span><span class="op">)</span></span>
 <span><span class="va">ST.var</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/StreamThermal/man/T_variability.html" class="external-link">T_variability</a></span><span class="op">(</span><span class="va">sitedata</span><span class="op">)</span></span></code></pre></div>
 <p>The output of StreamThermal is 5 separate objects. It may be convenient to export that data to Excel with each object on a separate tab. Example code is below using the <code>XLConnect</code> library. This code is similar that provided in the Export.IHA example.</p>
-<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span></span>
 <span><span class="co"># Save Results to Excel (each group on its own worksheet)</span></span>
 <span><span class="co">#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span></span>
@@ -1929,14 +1935,17 @@ The second plot is a CDF of values. The line represents the proportion of values
 <p>Calculates the RBI from a vector of flow measurements. Inputs are are vector of flow measurements over some time period (e.g., water year). Output is a single value that represents the RBI.</p>
 <p>The RBI is the sum of absolute differences between days divided by the total flow for the given time period.</p>
 <p>Baker, D.B., R.P. Richards, T.T. Loftus, and J.W. Kramer. 2004. A New Flashiness Index: Characteristics and Applications to Midwestern Rivers and Streams. April 2004. Journal of the American Water Resources Association (JAWRA). Pages 503:522.</p>
-<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Get Gage Data via the dataRetrieval package from USGS 01187300 2013</span></span>
 <span><span class="va">data.gage</span> <span class="op">&lt;-</span> <span class="fu">dataRetrieval</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/dataRetrieval/man/readNWISdv.html" class="external-link">readNWISdv</a></span><span class="op">(</span><span class="st">"03238500"</span></span>
 <span>                                       , <span class="st">"00060"</span></span>
 <span>                                       , <span class="st">"1974-10-01"</span></span>
 <span>                                       , <span class="st">"1975-09-30"</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## GET:https://waterservices.usgs.gov/nwis/dv/?site=03238500&amp;format=waterml%2C1.1&amp;ParameterCd=00060&amp;StatCd=00003&amp;startDT=1974-10-01&amp;endDT=1975-09-30</span></span></code></pre>
-<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
+<pre><code><span><span class="co">## Warning in dataRetrieval::readNWISdv("03238500", "00060", "1974-10-01", : NWIS</span></span>
+<span><span class="co">## servers are slated for decommission. Please begin to migrate to</span></span>
+<span><span class="co">## read_waterdata_daily.</span></span></code></pre>
+<pre><code><span><span class="co">## GET: https://waterservices.usgs.gov/nwis/dv/?site=03238500&amp;format=waterml%2C1.1&amp;ParameterCd=00060&amp;StatCd=00003&amp;startDT=1974-10-01&amp;endDT=1975-09-30</span></span></code></pre>
+<div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">data.gage</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##   agency_cd  site_no       Date X_00060_00003 X_00060_00003_cd</span></span>
 <span><span class="co">## 1      USGS 03238500 1974-10-01            38                A</span></span>
@@ -1945,7 +1954,7 @@ The second plot is a CDF of values. The line represents the proportion of values
 <span><span class="co">## 4      USGS 03238500 1974-10-04            20                A</span></span>
 <span><span class="co">## 5      USGS 03238500 1974-10-05            23                A</span></span>
 <span><span class="co">## 6      USGS 03238500 1974-10-06            23                A</span></span></code></pre>
-<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># flow data</span></span>
 <span><span class="va">data.Q</span> <span class="op">&lt;-</span> <span class="va">data.gage</span><span class="op">[</span>,<span class="fl">4</span><span class="op">]</span></span>
 <span><span class="co"># remove zeros</span></span>
@@ -1979,7 +1988,7 @@ Examples below:
 </li>
 </ul>
 <p>The example code below will download 2 years of discharge data from a USGS gage 0118730, add the necessary fields, save the file, and run SummaryStats.</p>
-<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb54"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="op">(</span><span class="va">myDir.BASE</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="co"># create and print temp directory for example data</span></span>
 <span><span class="co">#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span></span>
 <span><span class="co"># Summary Stats from Other Data</span></span>
@@ -2035,7 +2044,7 @@ HOBOware will not create files for use with R. The function formatHobo was creat
 <li><p>Delimiter = underscore (as specified in the config file)</p></li>
 </ul>
 <p>No data frames are returned. A CSV file ready for use with the ContDataQC QC function will be generated in the specified output directory.</p>
-<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb55"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Parameters</span></span>
 <span><span class="va">Selection.Operation</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"GetGageData"</span></span>
 <span>                         , <span class="st">"QCRaw"</span></span>
@@ -2120,10 +2129,10 @@ HOBOware will not create files for use with R. The function formatHobo was creat
 The only difference is the addition of depth to the data.<br>
 There are R packages designed for the analysis of lake monitoring data. One such example is <code>rLakeAnalyzer</code>.</p>
 <p>To aid users in QCing their continuous lake data an export function to <code>rLakeAnalyzer</code> was created in the <code>ContDataQC</code> package.</p>
-<div class="sourceCode" id="cb53"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb56"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="op">(</span><span class="va">myDir.BASE</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="co"># create and print temp directory for example data</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] "/var/folders/y6/nj790rtn62lfktb1sh__79hc0000gn/T//RtmpBSWM1m"</span></span></code></pre>
-<div class="sourceCode" id="cb55"><pre class="downlit sourceCode r">
+<pre><code><span><span class="co">## [1] "/var/folders/x7/ch5v91h56_zbvbd1y2f600dm0000gn/T//RtmpI621J3"</span></span></code></pre>
+<div class="sourceCode" id="cb58"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Convert Data for use with rLakeAnalyzer</span></span>
 <span></span>
 <span><span class="co"># Data</span></span>
@@ -2209,7 +2218,7 @@ There are R packages designed for the analysis of lake monitoring data. One such
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb56"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb59"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">df_rLA</span><span class="op">)</span></span>
 <span>       , caption <span class="op">=</span> <span class="st">"Example ContDataQC to rLakeAnalyze format function output."</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
@@ -2280,7 +2289,7 @@ There are R packages designed for the analysis of lake monitoring data. One such
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb57"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb60"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span></span>
 <span><span class="co"># Plot original data in ggplot</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
@@ -2294,7 +2303,7 @@ There are R packages designed for the analysis of lake monitoring data. One such
 <span><span class="co"># Plot, Show</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/XLConnect/man/print-methods.html" class="external-link">print</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span></span></code></pre></div>
 <p><img src="Vignette_ContDataQC_files/figure-html/rLA_Example-1.png" width="700"></p>
-<div class="sourceCode" id="cb58"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb61"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span></span>
 <span><span class="co"># use rLakeAnalyzer</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">rLakeAnalyzer</span><span class="op">)</span></span>
@@ -2357,7 +2366,7 @@ There are R packages designed for the analysis of lake monitoring data. One such
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb59"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb62"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">df_rLA_bth</span><span class="op">)</span></span>
 <span>             , caption <span class="op">=</span> <span class="st">"rLakeAnalyzer; Example depth and area data"</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
@@ -2381,15 +2390,15 @@ There are R packages designed for the analysis of lake monitoring data. One such
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb60"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb63"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Generate Heat Map</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/rLakeAnalyzer/man/wtr.heat.map.html" class="external-link">wtr.heat.map</a></span><span class="op">(</span><span class="va">df_rLA_wtr</span><span class="op">)</span></span></code></pre></div>
 <p><img src="Vignette_ContDataQC_files/figure-html/rLA_Example-2.png" width="700"></p>
-<div class="sourceCode" id="cb61"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb64"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Generate Schmidt Plot</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/rLakeAnalyzer/man/schmidt.plot.html" class="external-link">schmidt.plot</a></span><span class="op">(</span><span class="va">df_rLA_wtr</span>, <span class="va">df_rLA_bth</span><span class="op">)</span></span></code></pre></div>
 <p><img src="Vignette_ContDataQC_files/figure-html/rLA_Example-3.png" width="700"></p>
-<div class="sourceCode" id="cb62"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb65"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Generate Schmidt Stability Values</span></span>
 <span><span class="va">df_rLA_Schmidt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/rLakeAnalyzer/man/ts.schmidt.stability.html" class="external-link">ts.schmidt.stability</a></span><span class="op">(</span><span class="va">df_rLA_wtr</span>, <span class="va">df_rLA_bth</span><span class="op">)</span></span>
 <span></span>
@@ -2436,7 +2445,7 @@ There are R packages designed for the analysis of lake monitoring data. One such
 </h2>
 <p>It is possible to use data from other sources. The focus of the package has been user’s with no data system. Some users already have a system such as Aquarius. Below is an example script for obtaining data from such a system.<br>
 The script was contributed by Mark Hoger of PA DEP. This script is saved in the extdata folder as Aquarius_Data_Aquisition_PADEP.r.</p>
-<div class="sourceCode" id="cb63"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb66"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span></span>
 <span><span class="co">#</span></span>
 <span><span class="co"># This script accesses data using AQUARIUS Time-Series 3.x's Publish API.</span></span>
