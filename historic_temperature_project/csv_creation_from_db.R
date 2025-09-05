@@ -6,7 +6,7 @@ library(purrr)
 library(stringr)
 
 # Establishing database connection
-con = dbConnect(SQLite(), dbname = 'historic_temperature.db')
+con = dbConnect(SQLite(), dbname = '/home/deepuser/ContDataQC/historic_temperature_project/historic_temperature.db')
 
 # Data cleaning
 SQL = 'SELECT * FROM temperature;'
@@ -63,41 +63,66 @@ rm(drop_na_probes)
 time_dup_resolved = distinct(standard_24_time, probeID, staSeq, mDate, mTime, .keep_all = TRUE)
 rm(standard_24_time)
 
+#Adding mDateTime
+added_dt = time_dup_resolved %>%
+  mutate(
+    mDateTime = paste(mDate, mTime)
+  )
+rm(time_dup_resolved)
 
-# Add year column only for grouping
-time_dup_resolved = time_dup_resolved %>%
-  mutate(year = format(as.Date(mDate), "%Y"))
+#Split deployments
+gap_threshold = 1
+
+deployments = added_dt %>%
+  arrange(staSeq, probeID, mDateTime) %>%
+  group_by(staSeq, probeID) %>%
+  mutate(
+    time_diff = as.numeric(difftime(as.POSIXct(mDateTime, format = "%Y-%m-%d %H:%M:%S"), as.POSIXct(lag(mDateTime), format = "%Y-%m-%d %H:%M:%S"), units = "days")),
+    new_deployment = ifelse(is.na(time_diff) | time_diff > gap_threshold, 1, 0),
+    deployment_id = cumsum(new_deployment)
+  ) %>%
+  ungroup()
 
 # Group and split into list
-df_list = time_dup_resolved %>%
-  group_by(staSeq, year) %>%
+df_list = deployments %>%
+  group_by(staSeq, probeID, deployment_id) %>%
   group_split()
 
 # Get keys for file names
-group_keys = time_dup_resolved %>%
-  group_by(staSeq, year) %>%
-  group_keys()
+group_keys = deployments %>%
+  group_by(staSeq, probeID, deployment_id) %>%
+  summarise(
+    startDeploymentDate = format(min(as.POSIXct(mDateTime, format = "%Y-%m-%d %H:%M:%S")), "%Y%m%d"),
+    endDeploymentDate = format(max(as.POSIXct(mDateTime, format = "%Y-%m-%d %H:%M:%S")), "%Y%m%d"),
+    .groups = "drop"
+  )
 
 # Create file names
 file_names = paste0(
   group_keys$staSeq, "_Water_", 
-  group_keys$year, "0101_", 
-  group_keys$year, "1231.csv"
+  group_keys$startDeploymentDate, "_",
+  group_keys$endDeploymentDate, ".csv"
 )
 
 # Directory path
-dir_path = "/home/deepuser/Documents/historic_temperature_project/testing_csvs"
+dir_path = "/home/deepuser/ContDataQC/historic_temperature_project/data_to_qc"
 
 # Write all files
 for (i in seq_along(df_list)) {
   df = df_list[[i]]
   
-  # Remove year column before saving
-  df = df %>% select(-year)
+  probeID = unique(df$probeID)
   
-  df$mDateTime <- paste(df$mDate, df$mTime)
+  # Remove extra logic columns before saving
+  df = df %>% select(-time_diff, -new_deployment, -deployment_id)
   
-  file_path = file.path(dir_path, file_names[i])
+  subfolder_name = paste0(probeID, "_", sub(".csv", "", file_names[i]))
+  
+  subfolder_path = paste0(dir_path, "/", subfolder_name)
+  
+  dir.create(file.path(dir_path, subfolder_name))
+  
+  file_path = file.path(subfolder_path, file_names[i])
   
   write.csv(df, file_path, row.names = FALSE)
   

@@ -70,7 +70,7 @@ fun.QC <- function(fun.myData.SiteID
                    , fun.myDir.export = ""
                    , fun.myReport.format
                    , fun.myReport.Dir
-                   , fun.CreateReport = TRUE
+                   , fun.CreateReport = FALSE #Turn back to TRUE
                    , fun.AddDeployCol = FALSE) {##FUN.fun.QC.START
   #
   boo_DEBUG <- "FALSE"

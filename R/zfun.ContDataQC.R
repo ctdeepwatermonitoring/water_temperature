@@ -411,7 +411,7 @@ ContDataQC <- function(fun.myData.Operation
                        , fun.myFile = ""
                        , fun.myReport.format = ""
                        , fun.myReport.Dir = ""
-                       , fun.CreateReport = TRUE
+                       , fun.CreateReport = FALSE #Turn back to TRUE
                        , fun.AddDeployCol = TRUE) {
   # global variable bindings ----
   myData.Operation <- myData.SiteID <- myData.Type <- myData.DateRange.Start <-

@@ -9,3 +9,4 @@ water_control_data_qc_testing.R
 testing_csvs/
 testing_csvs_output/
 historic_temperature.db
+.Rdata

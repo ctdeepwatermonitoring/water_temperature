@@ -1,0 +1,175 @@
+Alexander Towle
+Alexander.Towle@ct.gov
+2025-07-07
+Documentation of Data Cleaning and Processing
+
+
+
+Steps for Data Cleaning (Documentation of csv_creation_from_db.R)
+
+Step 1: Select all data from the historic database
+
+Step 2: Standardize Unit of Measure
+Any row with uom that is not "Degrees C" is converted to "Degrees C".
+Rows containing uom that were not "Degrees C" were inspected to make sure they fall within expected Celsius values.
+All of them do.
+
+Step 3: Remove "QA post deploy" from the parameter
+Rows featuring the value "QA post deploy" indicate a reading when the probe was out of the water.
+All rows with a parameter of "QA post deploy" were dropped.
+
+Step 4: Standardizing parameter column.
+The remaining issues with the parameter column are that there are some spots where the paramter is NA and some where capitalization and spelling of "Water Temperature" differ.
+We don't test for anything besides water temperature so all the NA values are filled it with "Water Temperature".
+Additionally, any non-NA value not matching "Water Temperature" is converted to that.
+
+Step 5: Remove negative probes
+Some probes are obviously dummy values, such as probes with negative numbers (ex. -1, -123456).
+There rows are dropped.
+
+Step 6: Remove positive dummy value probes
+There is one additional probe that is 123456.
+This is clearly a dummy value and the rows were dropped.
+
+Step 7: Drop where probe is NA
+probeID, staSeq, mDate, and mTime compose the primary key and must have actual values.
+Where probe is NA is dropped.
+
+Step 8: Converting NA comments to "None" and NA createDates to "Missing"
+Some rows have no comment or createDates.
+This is fine since they aren't vital pieces of information, but having NA in a column will cause the program to crash.
+NAs are converted to a string "None" or "Missing" to avoid this.
+
+Step 9: Converting all mTime to 24 hour time
+There are spots where mTime is just a date (ex. 12/16/2007).
+After exploring the data it was determined that these are all spots meant to be 00:00:00 but there was some sort of conversion error.
+All these values are converted to "00:00:00"
+There are also mTime values that have AM or PM.
+All these values are converted to 24-hour time (ex. 01:00:00 PM -> 13:00:00).
+There are also values that include a date as well as a time.
+All these values are converted to 24-hour time and drop their date (ex. 12/15/2007 01:00:00 PM -> 13:00:00).
+
+Step 10: Dropping duplicates
+Some probes produce duplicate readings with different time formats and createDates.
+ex.
+probeID staSeq  mDate       mTime                   paramter            temp    uom         createDate          comment
+2238339 14444   2010-10-13  10/13/2010 6:00:00 PM   Water Temperature   12.92   Degrees C   2011-05-18 00:00:00 NA
+2238339 14444   2010-10-13  6:00:00 PM              Water Temperature   12.92   Degrees C   2012-02-06 00:00:00 NA
+Because times were standardized in Step 7, the duplicates can be dropped.
+
+Step 11: Arrange by probeID, staSeq, and mDateTime and split up by deployment
+Some files may not have chronologically ordered data.
+The QC flags compare adjacent points in the csv for anomalies such as spikes.
+If data is not ordered chronologically then it is potentially comparing temperatures at radically different times of day or seasons.
+This produces high failure rates.
+To avoid this, files need to be put in chronological order before being written out.
+Additionally, files need to be separated by deployment in order to portray accurate trends in the data.
+First, data is grouped by staSeq and probeID.
+Any gap greater than 1 day in the recorded dates of a certain probe at a certain site is considered a separate deployment.
+Columns time_diff, new_deployment, and deployment_id are added to compute deployments.
+time_diff is the difference in time between a record and the previous entry.
+new_deployment is a boolean value, 1 if the time_diff is NA (the very first value will be NA) or if time_diff is greater than the gap_threshold of 1, and 0 otherwise.
+deployment_id is the cumulative sum of the new_deployment column.
+After deployment_id is created, the data can be grouped by staSeq, probeID, and deployment_id, and split.
+Group keys are also created so that specific dates can be accessed for file name creation.
+
+Step 12: Create subfolders, drop deployment logic columns, and write out the csv files
+Subfolders use the naming convention: probeID_staSeq_Water_startdeploymentDate_endDeploymentDate.csv
+This uniquely identifies a deployment.
+ex.
+A folder containing the csv for the deployment of probe 824593 at site 14444 from Oct 13, 2010 to March 31, 2011 would be 824593_14444_Water_20101013_20110331
+File names use the naming convention: staSeq_Water_startDeploymentDate_endDeploymentDate.csv
+This is required for the QC method.
+ex.
+A csv for the deployment of probe 824593 at site 14444 from Oct 13, 2010 to March 31, 2011 would be 14444_Water_20101013_20110331.csv.
+The QC method requires this file name, so we need the subfolders to uniquely identify them.
+The subfolders also speed up runtime.
+The QC method scans every csv in a folder for a matching site and deployment from the file name, so by scanning the subfolder we drastically reduce runtime.
+time_diff, new_deployment, and deployment_id are dropped and then files are written out.
+
+
+
+Steps for QC (Documentation of csv_qc.R)
+
+Step 1: Load ContDataQC
+The code used for this can be found in this GitHub repository: https://github.com/ctdeepwatermonitoring/water_temperature
+It can be installed with the code given in the file or it can be loaded from a local copy using devtools::load_all("/path/to/directory").
+
+Step 2: Initialize input and output directories
+Once initialized, all csv files are placed into a list and the total amount of files is found to show progress.
+
+Step 3: Loop through all csv files
+File names are parsed for information needed for QC.
+The QC method does not work if there are less than 5 records in a file.
+If this is the case, default values are assigned and data flags are assigned as "X".
+Otherwise ContDataQC is called with the QCRaw operation using the information parsed from the file name and the config_deep.R file.
+Thresholds, columns, etc. can be adjusted within the config_deep.R file.
+The same subfolders that were used in creating the csvs are also created in the output directory to uniquely identify deployments.
+The QC method produces files with the naming convention: QC_staSeq_Water_startDeploymentDate_endDeploymentDate.csv
+ex.
+A QCed csv for the deployment of probe 824593 at site 14444 from Oct 13, 2010 to March 31, 2011 would be QC_14444_Water_20101013_20110331.csv.
+The QCed csvs will have the same columns as the inital csv in addition to several others, including QC flags and others needed for internal processing.
+ex.
+probeID staSeq  mDate       mTime       parameter           temp    uom         createDate  comment mDateTime           Month   Day Year    MonthDay    Flag.Gross.temp Flag.Spike.temp Flag.RoC.temp   Flag.Flat.temp  Flag.temp   RAW.mDateTime       Comment.MOD.mDateTime   RAW.probeID Comment.MOD.probeID RAW.staSeq  Comment.MOD.staSeq	RAW.mDate   Comment.MOD.mDate	RAW.mTime   Comment.MOD.mTime	RAW.parameter       Comment.MOD.parameter	RAW.temp    Comment.MOD.temp	RAW.uom Comment.MOD.uom	RAW.createDate  Comment.MOD.createDate	RAW.comment Comment.MOD.comment
+1298184	17701	2011-05-25	14:11:27	Water Temperature	20.198	Degrees C	2012-12-07	None	2011-05-25 14:11:27	5	    25	2011	525	        P	            F	            S	            P	            F           2011-05-25 14:11:27	                        1298184	                        17701	                        2011-05-25	                    14:11:27	                    Water Temperature	                        20.198	                        Degrees C	            2012-12-07	                            None
+
+
+
+Steps for QC EDA (Documentation of qc_eda.R)
+
+Step 1: Gather all QCed data
+The directory where the QCed data was put is initialized, and a list is made of all csv files in the subfolders.
+The deployment_id is reassigned, this time as the subfolder name.
+All data from the csvs are put into one dataframe called all_flagged_data.
+
+Step 2: Producing overall flag counts and percentages
+A table is produced that shows each of the four flag types (P - Pass, F - Fail, S - Suspect, X - No Data).
+It shows percentages and how many occurances there are of each flag type.
+
+Step 3: Breaking down flags by causes
+Overall flags are assigned based on four qualities, each given their own flag: flatline, spike, rate of change, and gross value.
+If any one of these fails, the overall flag fails.
+If none fail but any one of them is suspect, the overall flag is suspect.
+If none fail or are suspect, and at least one of them passes, the overall flag is pass.
+If there is no data for all of them, the overall flag is no data.
+A table is produced that totals up and gives percentages for all of the reasons that overall flags were assigned.
+Combined reasons are counted separately (ex. A point that failed both RoC and Spike is counted under the "RoC + Spike" bin rather than counting it twice in the "RoC" bin and the "Spike" bin).
+
+Step 4: Give individual deployments bins
+To gain a better idea of how many points are failing at certain sites, bins are created in 5% increments from 0%-100.
+Each deployment is summarised and sorted into these bins.
+ex.
+A deployment with 100 records where 4 fail and 32 are suspect falls into the 0%-5 fail bin and the 30%-5 suspect bin.
+
+Step 5: Get counts of failure and suspect bins
+The bins are summarised to show how many records fall into each bin.
+Deployments can be filtered by bin to find high failure or suspect sites.
+
+Step 6: Producing a visualization of flags for deployment
+Specifying a deployment_id can create a visualization of that deployment.
+It shows the records of water temperature over the course of the deployment.
+Points are color-coded with black for passing points, orange for suspect points, red for failing points, and gray for no data.
+
+
+
+Steps to prepare data for migration into the modern database (Documentation of migration_prep.R)
+
+Step 1: Gather all csv files
+Input and output directories are specified.
+All csv files in the input directory are put into a list.
+
+Step 2: Loop through the data, modify, and write out a new csv
+Each file is read, then modified to the expected format.
+Some columns are renamed and some do not exist in the old data and are added in.
+Added columns: Collector (set to "ABM" by default), ProbeType (set to "HOBO" by default).
+Renamed columns: mDateTime -> Date_Time, temp -> Temp, uom -> UOM, probeID -> ProbeID, staSeq -> SID, Flag.temp -> dataFlag.
+UOM gets populated with "deg C" to be consistent with the rest of the modern database.
+The comment column remains the same.
+Everything else gets left out.
+ex.
+Date_Time           Temp    UOM     ProbeID SID     Collector   ProbeType   dataFlag    comment
+2011-05-25 14:11:27 20.198  deg C   1298184	17701   ABM         HOBO	    P           None
+New csv files are placed in the same directory without subfolders and use the naming convention: QC_probeID_staSeq_Water_startDeploymentDate_endDeploymentDate.csv
+ex.
+A csv for the deployment of probe 824593 at site 14444 from Oct 13, 2010 to March 31, 2011 would be QC_824593_14444_Water_20101013_20110331.csv
+The files are written out and will use the insert_temp_results.py script to be taken into the database.
