@@ -32,12 +32,7 @@ require("ContDataQC")
 ###############################################################################
 # Parameters
 library(RSQLite)
-library(lubridate)
-library(dplyr)
-library(purrr)
-library(stringr)
-library(devtools)
-library(readr)
+library(tidyverse)
 
 input_main_directory = "/home/deepuser/ContDataQC/historic_temperature_project/data_to_qc"
 output_main_directory = "/home/deepuser/ContDataQC/historic_temperature_project/qced_data"

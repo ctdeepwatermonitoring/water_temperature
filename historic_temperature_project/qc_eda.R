@@ -1,8 +1,4 @@
 library(RSQLite)
-library(lubridate)
-library(dplyr)
-library(purrr)
-library(stringr)
 library(tidyverse)
 
 flags_directory = "/home/deepuser/ContDataQC/historic_temperature_project/qced_data"

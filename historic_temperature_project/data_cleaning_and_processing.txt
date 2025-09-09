@@ -5,6 +5,11 @@ Documentation of Data Cleaning and Processing
 
 
 
+Required packages for cleaning and processing:
+RSQLite
+tidyverse
+ContDataQC (loaded automatically in csv_qc.R)
+
 Steps for Data Cleaning (Documentation of csv_creation_from_db.R)
 
 Step 1: Select all data from the historic database

@@ -1,9 +1,6 @@
 # Loading RSQLite library
 library(RSQLite)
-library(lubridate)
-library(dplyr)
-library(purrr)
-library(stringr)
+library(tidyverse)
 
 # Establishing database connection
 con = dbConnect(SQLite(), dbname = '/home/deepuser/ContDataQC/historic_temperature_project/historic_temperature.db')
