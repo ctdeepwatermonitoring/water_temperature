@@ -208,7 +208,7 @@ http://www.intowindows.com/how-to-run-msi-file-as-administrator-from-command-pro
 <span class="r-in"><span>                   , <span class="st">"Data3_Aggregated"</span></span></span>
 <span class="r-in"><span>                   , <span class="st">"Data4_Stats"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">(</span><span class="va">myDir.BASE</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="co"># create and print temp directory for example data</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "/var/folders/x7/ch5v91h56_zbvbd1y2f600dm0000gn/T//RtmpuigqFT"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "/var/folders/x7/ch5v91h56_zbvbd1y2f600dm0000gn/T//RtmpbqKmwW"</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Create data directories</span></span></span>
 <span class="r-in"><span><span class="va">myDir.create</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">myDir.BASE</span>, <span class="va">Selection.SUB</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span></span>
@@ -297,7 +297,7 @@ http://www.intowindows.com/how-to-run-msi-file-as-administrator-from-command-pro
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing item 1 of 1, COMPLETE, 01187300."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Task COMPLETE; 0.12 min."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Task COMPLETE; 0.09 min."</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># 01.B. Get Gage Data (central time zone)</span></span></span>
 <span class="r-in"><span><span class="va">myData.Operation</span>       <span class="op">&lt;-</span> <span class="st">"GetGageData"</span> <span class="co">#Selection.Operation[1]</span></span></span>
@@ -386,7 +386,7 @@ http://www.intowindows.com/how-to-run-msi-file-as-administrator-from-command-pro
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing item 5 of 6, WORKING (QC Tests and Flags - SensorDepth), test2_AW_20140901_20140930.csv."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing item 5 of 6, COMPLETE, test2_AW_20140901_20140930.csv."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing item 6 of 6, SKIPPED (Non-Match, SiteID), test4_AW_20160418_20160726.csv."</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Task COMPLETE; 0.04 min."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Task COMPLETE; 0.03 min."</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># 02.B. QC Raw Data (offset collection times for air and water sensors)</span></span></span>
 <span class="r-in"><span><span class="va">myData.Operation</span>       <span class="op">&lt;-</span> <span class="st">"QCRaw"</span> <span class="co">#Selection.Operation[2]</span></span></span>
@@ -417,7 +417,7 @@ http://www.intowindows.com/how-to-run-msi-file-as-administrator-from-command-pro
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing item 6 of 6, WORKING (QC Tests and Flags - AirP), test4_AW_20160418_20160726.csv."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing item 6 of 6, WORKING (QC Tests and Flags - SensorDepth), test4_AW_20160418_20160726.csv."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing item 6 of 6, COMPLETE, test4_AW_20160418_20160726.csv."</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Task COMPLETE; 0.03 min."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Task COMPLETE; 0.02 min."</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># 03. Aggregate Data</span></span></span>
 <span class="r-in"><span><span class="va">myData.Operation</span>       <span class="op">&lt;-</span> <span class="st">"Aggregate"</span> <span class="co">#Selection.Operation[3]</span></span></span>
@@ -441,7 +441,7 @@ http://www.intowindows.com/how-to-run-msi-file-as-administrator-from-command-pro
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing item 3 of 4, COMPLETE, QC_test2_Aw_20140901_20140930.csv."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing item 4 of 4, SKIPPED (Non-Match, SiteID), QC_test4_Aw_20160418_20160726.csv."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing of 4 of 4 files complete."</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing of items (n=4) finished.  Total time = 1.122652 secs."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing of items (n=4) finished.  Total time = 0.754226 secs."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Items COMPLETE = 3."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Items SKIPPPED = 1."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "User defined parameters: SiteID (test2), Data Type (Aw), Date Range (2013-01-01 to 2014-12-31)."</span>
@@ -506,7 +506,7 @@ http://www.intowindows.com/how-to-run-msi-file-as-administrator-from-command-pro
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing item 3 of 3, WORKING (QC Tests and Flags - AirP), test2_AW_20140901_20140930.csv."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing item 3 of 3, WORKING (QC Tests and Flags - SensorDepth), test2_AW_20140901_20140930.csv."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing item 3 of 3, COMPLETE, test2_AW_20140901_20140930.csv."</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Task COMPLETE; 0.05 min."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Task COMPLETE; 0.03 min."</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># 03.Alt. Aggregate Data</span></span></span>
 <span class="r-in"><span><span class="va">myData.Operation</span> <span class="op">&lt;-</span> <span class="st">"Aggregate"</span> <span class="co">#Selection.Operation[3]</span></span></span>
@@ -526,7 +526,7 @@ http://www.intowindows.com/how-to-run-msi-file-as-administrator-from-command-pro
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing item 2 of 3, COMPLETE, QC_test2_Aw_20130725_20131015.csv."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing item 3 of 3, COMPLETE, QC_test2_Aw_20140901_20140930.csv."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing of 3 of 3 files complete."</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing of items (n=3) finished.  Total time = 1.497942 secs."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing of items (n=3) finished.  Total time = 0.741329 secs."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Items COMPLETE = 3."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Items SKIPPPED = 0."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "User defined parameters: File Output(DATA_QC_test2_Aw_20130426_20140930.csv)."</span>
@@ -546,7 +546,7 @@ http://www.intowindows.com/how-to-run-msi-file-as-administrator-from-command-pro
 <span class="r-in"><span>           , fun.myFile <span class="op">=</span> <span class="va">myFile</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Total files to process = 1"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "ERROR; no such file exits.  Cannot generate summary statistics."</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "PATH = /var/folders/x7/ch5v91h56_zbvbd1y2f600dm0000gn/T//RtmpuigqFT/Data2_QC"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "PATH = /var/folders/x7/ch5v91h56_zbvbd1y2f600dm0000gn/T//RtmpbqKmwW/Data2_QC"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "FILE = QC_test2_AW_20130426_20130725.csv"</span>
 <span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in fun.Stats.File(fun.myFile, fun.myDir.import, fun.myDir.export,     fun.myReport.format, fun.myReport.Dir):</span> Bad file.</span>
 <span class="r-in"><span></span></span>
@@ -603,7 +603,7 @@ http://www.intowindows.com/how-to-run-msi-file-as-administrator-from-command-pro
 <span class="r-in"><span><span class="co"># Lake Data, Aggregate</span></span></span>
 <span class="r-in"><span><span class="co">#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span></span></span>
 <span class="r-in"><span><span class="op">(</span><span class="va">myDir.BASE</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="co"># create and print temp directory for example data</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "/var/folders/x7/ch5v91h56_zbvbd1y2f600dm0000gn/T//RtmpuigqFT"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "/var/folders/x7/ch5v91h56_zbvbd1y2f600dm0000gn/T//RtmpbqKmwW"</span>
 <span class="r-in"><span><span class="co"># 06. Lake Data</span></span></span>
 <span class="r-in"><span><span class="co"># Save example data (assumes directory exists)</span></span></span>
 <span class="r-in"><span><span class="va">myFile</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"QC_Ellis--1.0m_Water_20180524_20180918.csv"</span></span></span>
@@ -627,7 +627,7 @@ http://www.intowindows.com/how-to-run-msi-file-as-administrator-from-command-pro
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing item 1 of 2, COMPLETE, QC_Ellis--1.0m_Water_20180524_20180918.csv."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing item 2 of 2, COMPLETE, QC_Ellis--3.0m_Water_20180524_20180918.csv."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing of 2 of 2 files complete."</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing of items (n=2) finished.  Total time = 0.290765 secs."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing of items (n=2) finished.  Total time = 0.263926 secs."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Items COMPLETE = 2."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Items SKIPPPED = 0."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "User defined parameters: File Output(DATA_QC_Ellis--1.0m_Water_20180524_20180918.csv)."</span>
