@@ -30,7 +30,7 @@ Additionally, any non-NA value not matching "Water Temperature" is converted to 
 
 Step 5: Remove negative probes
 Some probes are obviously dummy values, such as probes with negative numbers (ex. -1, -123456).
-There rows are dropped.
+These rows are dropped.
 
 Step 6: Remove positive dummy value probes
 There is one additional probe that is 123456.
