@@ -1,4 +1,4 @@
-# Testing a new config file
+# Config file for historic data
 # 2025-05-30
 # Alexander.Towle@ct.gov
 

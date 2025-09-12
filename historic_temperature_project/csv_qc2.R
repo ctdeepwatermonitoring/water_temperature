@@ -31,12 +31,14 @@ require("ContDataQC")
 
 ###############################################################################
 # Parameters
-library(RSQLite)
 library(tidyverse)
 
-input_main_directory = "/home/deepuser/ContDataQC/historic_temperature_project/data_to_qc"
+#Directories
+input_main_directory = "/home/deepuser/ContDataQC/historic_temperature_project/raw_data"
+rename_main_directory = "/home/deepuser/ContDataQC/historic_temperature_project/data_to_qc"
 output_main_directory = "/home/deepuser/ContDataQC/historic_temperature_project/qced_data"
 
+#List of all csv files
 all_csv_files = list.files(
   path = input_main_directory,
   pattern = "\\.csv$",
@@ -44,11 +46,64 @@ all_csv_files = list.files(
   full.names = TRUE
 )
 
+#Total files
 total_files = length(all_csv_files)
 
+#Loop along all csv files, rename in expected format and save to subfolders
 for (i in seq_along(all_csv_files)) {
-  file_path = all_csv_files[i]
-  print(paste("Processing", i, "of", total_files, "total files"))
+  df_path = all_csv_files[i]
+  df = read_csv(df_path, show_col_types = FALSE)
+
+  probeID = unique(df$ProbeID)
+  staSeq = unique(df$SID)
+  
+  startDeploymentDate = format(min(as.POSIXct(df$Date_Time, format = "%m/%d/%y %H:%M:%S")), "%Y%m%d")
+  endDeploymentDate = format(max(as.POSIXct(df$Date_Time, format = "%m/%d/%y %H:%M:%S")), "%Y%m%d")
+  
+  out_identifier = paste0(staSeq, "_Water_", startDeploymentDate, "_", endDeploymentDate)
+  out_name = paste0(out_identifier, ".csv")
+  out_folder = file.path(rename_main_directory, paste0(probeID, "_", out_identifier))
+  out_path = file.path(out_folder, out_name)
+  
+  df_clean = df %>%
+    mutate(
+      Date_Time = as.POSIXct(Date_Time, format = "%m/%d/%y %H:%M:%S")
+    ) %>%
+    filter(
+      !is.na(Date_Time),
+      !is.na(SID),
+      !is.na(ProbeID)
+    ) %>%
+    arrange(Date_Time) %>%
+    distinct() %>%
+    mutate(
+      mDate = format(Date_Time, "%m/%d/%Y"),
+      mTime = format(Date_Time, "%H:%M:%S"),
+      Date_Time = format(Date_Time, "%Y-%m-%d %H:%M:%S")
+    )
+    
+  dir.create(out_folder, showWarnings = FALSE, recursive = TRUE)
+  
+  write_csv(df_clean, out_path)
+}
+
+
+
+
+
+#QCing data
+qc_prep_files = list.files(
+  path = rename_main_directory,
+  pattern = "\\.csv$",
+  recursive = TRUE,
+  full.names = TRUE
+)
+
+total_qc_prep_files = length(qc_prep_files)
+
+for (i in seq_along(qc_prep_files)) {
+  file_path = qc_prep_files[i]
+  print(paste("Processing", i, "of", total_qc_prep_files, "total files"))
   file_name = basename(file_path)
   parts = strsplit(file_name, "_")[[1]]
   site_id = parts[1]
@@ -60,37 +115,34 @@ for (i in seq_along(all_csv_files)) {
   if (nrow(df) < 5) {
     df_out = df %>%
       mutate(
-        mDateTime = as.character(mDateTime),
-        createDate = as.character(createDate),
-        Month = lubridate::month(as.POSIXct(mDateTime, format = "%Y-%m-%d %H:%M:%S")),
-        Day = lubridate::day(as.POSIXct(mDateTime, format = "%Y-%m-%d %H:%M:%S")),
-        Year = lubridate::year(as.POSIXct(mDateTime, format = "%Y-%m-%d %H:%M:%S")),
+        Date_Time = as.character(Date_Time),
+        Month = lubridate::month(as.POSIXct(Date_Time, format = "%Y-%m-%d %H:%M:%S")),
+        Day = lubridate::day(as.POSIXct(Date_Time, format = "%Y-%m-%d %H:%M:%S")),
+        Year = lubridate::year(as.POSIXct(Date_Time, format = "%Y-%m-%d %H:%M:%S")),
         MonthDay = as.integer(paste0(Month, Day)),
         `Flag.Gross.temp` = "X",
         `Flag.Spike.temp` = "X",
         `Flag.RoC.temp` = "X",
         `Flag.Flat.temp` = "X",
         `Flag.temp` = "X",
-        `Comment.MOD.mDateTime` = "",
-        `Comment.MOD.probeID` = "",
-        `Comment.MOD.staSeq` = "",
+        `Comment.MOD.Date_Time` = "",
+        `Comment.MOD.Temp` = "",
+        `Comment.MOD.UOM` = "",
+        `Comment.MOD.ProbeID` = "",
+        `Comment.MOD.SID` = "",
+        `Comment.MOD.Collector` = "",
+        `Comment.MOD.ProbeType` = "",
         `Comment.MOD.mDate` = "",
         `Comment.MOD.mTime` = "",
-        `Comment.MOD.parameter` = "",
-        `Comment.MOD.temp` = "",
-        `Comment.MOD.uom` = "",
-        `Comment.MOD.createDate` = "",
-        `Comment.MOD.comment` = "",
-        `RAW.mDateTime` = as.character(mDateTime),
-        `RAW.probeID` = probeID,
-        `RAW.staSeq` = staSeq,
-        `RAW.mDate` = mDate,
-        `RAW.mTime` = mTime,
-        `RAW.parameter` = parameter,
-        `RAW.temp` = temp,
-        `RAW.uom` = uom,
-        `RAW.createDate` = as.character(createDate),
-        `RAW.comment` = comment
+        `RAW.Date_Time` = "",
+        `RAW.Temp` = "",
+        `RAW.UOM` = "",
+        `RAW.ProbeID` = "",
+        `RAW.SID` = "",
+        `RAW.Collector` = "",
+        `RAW.ProbeType` = "",
+        `RAW.mDate` = "",
+        `RAW.mTime` = "",
       )
     
     myDir.import = dirname(file_path)
@@ -116,7 +168,7 @@ for (i in seq_along(all_csv_files)) {
     dir.create(myDir.export, showWarnings = TRUE, recursive = TRUE)
     
     myReport.format = "html"
-    myConfig = "/home/deepuser/ContDataQC/historic_temperature_project/config_deep.R"
+    myConfig = "/home/deepuser/ContDataQC/historic_temperature_project/config_deep2.R"
     
     ContDataQC(myData.Operation,
                myData.SiteID,
