@@ -10,7 +10,7 @@ RSQLite
 tidyverse
 ContDataQC (loaded automatically in csv_qc.R)
 
-Steps for Data Cleaning (Documentation of csv_creation_from_db.R)
+Steps for Data Cleaning for Historic Data (Documentation of csv_creation_from_db.R)
 
 Step 1: Select all data from the historic database
 
@@ -94,7 +94,7 @@ time_diff, new_deployment, and deployment_id are dropped and then files are writ
 
 
 
-Steps for QC (Documentation of csv_qc.R)
+Steps for QC of Historic Data (Documentation of csv_qc.R)
 
 Step 1: Load ContDataQC
 The code used for this can be found in this GitHub repository: https://github.com/ctdeepwatermonitoring/water_temperature
@@ -103,7 +103,7 @@ It can be installed with the code given in the file or it can be loaded from a l
 Step 2: Initialize input and output directories
 Once initialized, all csv files are placed into a list and the total amount of files is found to show progress.
 
-Step 3: Loop through all csv files
+Step 3: Loop through all csv files and produce QC files
 File names are parsed for information needed for QC.
 The QC method does not work if there are less than 5 records in a file.
 If this is the case, default values are assigned and data flags are assigned as "X".
@@ -117,6 +117,39 @@ The QCed csvs will have the same columns as the inital csv in addition to severa
 ex.
 probeID staSeq  mDate       mTime       parameter           temp    uom         createDate  comment mDateTime           Month   Day Year    MonthDay    Flag.Gross.temp Flag.Spike.temp Flag.RoC.temp   Flag.Flat.temp  Flag.temp   RAW.mDateTime       Comment.MOD.mDateTime   RAW.probeID Comment.MOD.probeID RAW.staSeq  Comment.MOD.staSeq	RAW.mDate   Comment.MOD.mDate	RAW.mTime   Comment.MOD.mTime	RAW.parameter       Comment.MOD.parameter	RAW.temp    Comment.MOD.temp	RAW.uom Comment.MOD.uom	RAW.createDate  Comment.MOD.createDate	RAW.comment Comment.MOD.comment
 1298184	17701	2011-05-25	14:11:27	Water Temperature	20.198	Degrees C	2012-12-07	None	2011-05-25 14:11:27	5	    25	2011	525	        P	            F	            S	            P	            F           2011-05-25 14:11:27	                        1298184	                        17701	                        2011-05-25	                    14:11:27	                    Water Temperature	                        20.198	                        Degrees C	            2012-12-07	                            None
+For the historic data, the config file config_deep.R must be specified in the QC method call.
+
+
+
+Steps for QC of Modern Data (Documentation of csv_qc2.R)
+
+Step 1: Load ContDataQC
+The code used for this can be found in this GitHub repository: https://github.com/ctdeepwatermonitoring/water_temperature
+It can be installed with the code given in the file or it can be loaded from a local copy using devtools::load_all("/path/to/directory").
+
+Step 2: Initialize input and output directories
+Once initialized, all csv files are placed into a list and the total amount of files is found to show progress.
+
+Step 3: Convert datetimes to proper format, add mDate and mTime
+Date, Time, and Datetime are needed to make the QC method work smoothly.
+Datetime usually starts in the format MM/DD/YY.
+This is unexpected by ContDataQC, so this file converts to YYYY-MM-DD.
+
+Step 4: Write out to subfolders
+Subfolder and file names follow the naming conventions laid out under step 12 of the documentation of csv_creation_from_db.R
+
+Step 5: Read in recently written out data
+The QC method needs to read in csvs, hence why data is written out before being read again.
+Total files are also calculated.
+
+Step 6: Fill default values for deployments with less than 5 entries
+The QC method does not work properly for any deployment with less than 5 entries.
+Default values must be filled in.
+
+Step 7: Call QC method
+For deployments with 5 or more entries, the QC method is called.
+Files with QC values and data for internal processing are written to the output directory.
+For the modern data, the config_deep2.R file must be used in the QC method call.
 
 
 

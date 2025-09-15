@@ -54,6 +54,7 @@ for (i in seq_along(all_csv_files)) {
   df_path = all_csv_files[i]
   df = read_csv(df_path, show_col_types = FALSE)
 
+  #Naming conventions and directory handling
   probeID = unique(df$ProbeID)
   staSeq = unique(df$SID)
   
@@ -65,6 +66,7 @@ for (i in seq_along(all_csv_files)) {
   out_folder = file.path(rename_main_directory, paste0(probeID, "_", out_identifier))
   out_path = file.path(out_folder, out_name)
   
+  #Converting datetime formats and data types. Dropping NAs.
   df_clean = df %>%
     mutate(
       Date_Time = as.POSIXct(Date_Time, format = "%m/%d/%y %H:%M:%S")
@@ -81,9 +83,10 @@ for (i in seq_along(all_csv_files)) {
       mTime = format(Date_Time, "%H:%M:%S"),
       Date_Time = format(Date_Time, "%Y-%m-%d %H:%M:%S")
     )
-    
+  
   dir.create(out_folder, showWarnings = FALSE, recursive = TRUE)
   
+  #Writing out csvs
   write_csv(df_clean, out_path)
 }
 
@@ -99,8 +102,10 @@ qc_prep_files = list.files(
   full.names = TRUE
 )
 
+#total files
 total_qc_prep_files = length(qc_prep_files)
 
+#Loop along csv files, QC them, and save them into their subfolders
 for (i in seq_along(qc_prep_files)) {
   file_path = qc_prep_files[i]
   print(paste("Processing", i, "of", total_qc_prep_files, "total files"))
@@ -112,6 +117,7 @@ for (i in seq_along(qc_prep_files)) {
   
   df = read_csv(file_path, show_col_types = FALSE)
   
+  #Fill default values for files with less than 5 rows
   if (nrow(df) < 5) {
     df_out = df %>%
       mutate(
@@ -145,6 +151,7 @@ for (i in seq_along(qc_prep_files)) {
         `RAW.mTime` = "",
       )
     
+    #Writing out with uniquely identifying subfolder names
     myDir.import = dirname(file_path)
     rel_folder = basename(myDir.import)
     myDir.export = file.path(output_main_directory, rel_folder)
@@ -156,6 +163,7 @@ for (i in seq_along(qc_prep_files)) {
     print(paste("Skipped QC (too few rows). Wrote default file for", file_name))
     
   } else {
+    #Call QC method
     myData.Operation = "QCRaw"
     myData.SiteID = site_id
     myData.Type = "Water"
