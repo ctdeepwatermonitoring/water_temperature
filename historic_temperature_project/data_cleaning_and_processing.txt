@@ -187,11 +187,10 @@ Points are color-coded with black for passing points, orange for suspect points,
 
 
 
-Steps to prepare data for migration into the modern database (Documentation of migration_prep.R)
+Steps to prepare historic data for migration into the modern database (Documentation of migration_prep.R)
 
 Step 1: Gather all csv files
-Input and output directories are specified.
-All csv files in the input directory are put into a list.
+
 
 Step 2: Loop through the data, modify, and write out a new csv
 Each file is read, then modified to the expected format.
@@ -208,3 +207,19 @@ New csv files are placed in the same directory without subfolders and use the na
 ex.
 A csv for the deployment of probe 824593 at site 14444 from Oct 13, 2010 to March 31, 2011 would be QC_824593_14444_Water_20101013_20110331.csv
 The files are written out and will use the insert_temp_results.py script to be taken into the database.
+
+
+
+Steps to prepare modern data for migration into the modern database (Documentation of migration_prep2.R)
+
+Step 1: Gather all csv files
+Input and output directories are specified.
+All csv files in the input directory are put into a list.
+
+Step 2: Loop through the data, modify, and write out a new csv
+Each file is read, then modified to the expected format.
+Some columns are renamed and some do not exist in the old data and are added in.
+Added columns: comment (set to "" by default).
+Renamed columns: Flag.temp -> dataFlag.
+Columns from the beginning get carried over.
+Everything else gets left out.
