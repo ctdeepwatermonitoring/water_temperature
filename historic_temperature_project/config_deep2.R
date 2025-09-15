@@ -2,11 +2,12 @@
 # 2025-09-12
 # Alexander.Towle@ct.gov
 
-# Renamed columns that were already there
+# Columns that were already there
 ContData.env$myName.SiteID = "SID"
 ContData.env$myName.LoggerID.Water = "ProbeID"
 ContData.env$myName.WaterTemp = "Temp"
 ContData.env$myName.DateTime = "Date_Time"
+ContData.env$myName.UOM = "UOM"
 
 #UOM label already matches
 

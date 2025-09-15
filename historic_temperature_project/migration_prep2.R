@@ -24,17 +24,15 @@ for (f in files_to_prep) {
   
   data_out = data %>%
     mutate(
-      Collector = "ABM",
-      ProbeType = "HOBO",
-      UOM = "deg C",
-      dataFlag = Flag.Temp
+      dataFlag = Flag.Temp,
+      comment = ""
     ) %>%
     transmute(
-      Date_Time = as.character(mDateTime),
-      Temp = temp,
+      Date_Time = as.character(Date_Time),
+      Temp = Temp,
       UOM = UOM,
-      ProbeID = probeID,
-      SID = staSeq,
+      ProbeID = ProbeID,
+      SID = SID,
       Collector = Collector,
       ProbeType = ProbeType,
       dataFlag = dataFlag,
