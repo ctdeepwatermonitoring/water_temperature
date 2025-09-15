@@ -10,42 +10,47 @@ RSQLite
 tidyverse
 ContDataQC (loaded automatically in csv_qc.R)
 
-Steps for Data Cleaning for Historic Data (Documentation of csv_creation_from_db.R)
+Steps for Data Cleaning and QC of Historic Data (Documentation of csv_qc.R)
 
-Step 1: Select all data from the historic database
+Step 1: Load ContDataQC and required libraries
+The code used for this can be found in this GitHub repository: https://github.com/ctdeepwatermonitoring/water_temperature
+It can be installed with the code given in the file or it can be loaded from a local copy using devtools::load_all("/path/to/directory").
+Libraries that need installation are RSQLite and tidyverse.
 
-Step 2: Standardize Unit of Measure
+Step 2: Select all data from the historic database
+
+Step 3: Standardize Unit of Measure
 Any row with uom that is not "Degrees C" is converted to "Degrees C".
 Rows containing uom that were not "Degrees C" were inspected to make sure they fall within expected Celsius values.
 All of them do.
 
-Step 3: Remove "QA post deploy" from the parameter
+Step 4: Remove "QA post deploy" from the parameter
 Rows featuring the value "QA post deploy" indicate a reading when the probe was out of the water.
 All rows with a parameter of "QA post deploy" were dropped.
 
-Step 4: Standardizing parameter column.
+Step 5: Standardizing parameter column.
 The remaining issues with the parameter column are that there are some spots where the paramter is NA and some where capitalization and spelling of "Water Temperature" differ.
 We don't test for anything besides water temperature so all the NA values are filled it with "Water Temperature".
 Additionally, any non-NA value not matching "Water Temperature" is converted to that.
 
-Step 5: Remove negative probes
+Step 6: Remove negative probes
 Some probes are obviously dummy values, such as probes with negative numbers (ex. -1, -123456).
 These rows are dropped.
 
-Step 6: Remove positive dummy value probes
+Step 7: Remove positive dummy value probes
 There is one additional probe that is 123456.
 This is clearly a dummy value and the rows were dropped.
 
-Step 7: Drop where probe is NA
+Step 8: Drop where probe is NA
 probeID, staSeq, mDate, and mTime compose the primary key and must have actual values.
 Where probe is NA is dropped.
 
-Step 8: Converting NA comments to "None" and NA createDates to "Missing"
+Step 9: Converting NA comments to "None" and NA createDates to "Missing"
 Some rows have no comment or createDates.
 This is fine since they aren't vital pieces of information, but having NA in a column will cause the program to crash.
 NAs are converted to a string "None" or "Missing" to avoid this.
 
-Step 9: Converting all mTime to 24 hour time
+Step 10: Converting all mTime to 24 hour time
 There are spots where mTime is just a date (ex. 12/16/2007).
 After exploring the data it was determined that these are all spots meant to be 00:00:00 but there was some sort of conversion error.
 All these values are converted to "00:00:00"
@@ -54,7 +59,7 @@ All these values are converted to 24-hour time (ex. 01:00:00 PM -> 13:00:00).
 There are also values that include a date as well as a time.
 All these values are converted to 24-hour time and drop their date (ex. 12/15/2007 01:00:00 PM -> 13:00:00).
 
-Step 10: Dropping duplicates
+Step 11: Dropping duplicates
 Some probes produce duplicate readings with different time formats and createDates.
 ex.
 probeID staSeq  mDate       mTime                   paramter            temp    uom         createDate          comment
@@ -62,7 +67,7 @@ probeID staSeq  mDate       mTime                   paramter            temp    
 2238339 14444   2010-10-13  6:00:00 PM              Water Temperature   12.92   Degrees C   2012-02-06 00:00:00 NA
 Because times were standardized in Step 7, the duplicates can be dropped.
 
-Step 11: Arrange by probeID, staSeq, and mDateTime and split up by deployment
+Step 12: Arrange by probeID, staSeq, and mDateTime and split up by deployment
 Some files may not have chronologically ordered data.
 The QC flags compare adjacent points in the csv for anomalies such as spikes.
 If data is not ordered chronologically then it is potentially comparing temperatures at radically different times of day or seasons.
@@ -78,7 +83,7 @@ deployment_id is the cumulative sum of the new_deployment column.
 After deployment_id is created, the data can be grouped by staSeq, probeID, and deployment_id, and split.
 Group keys are also created so that specific dates can be accessed for file name creation.
 
-Step 12: Create subfolders, drop deployment logic columns, and write out the csv files
+Step 13: Create subfolders, drop deployment logic columns, and write out the csv files
 Subfolders use the naming convention: probeID_staSeq_Water_startdeploymentDate_endDeploymentDate.csv
 This uniquely identifies a deployment.
 ex.
@@ -92,18 +97,10 @@ The subfolders also speed up runtime.
 The QC method scans every csv in a folder for a matching site and deployment from the file name, so by scanning the subfolder we drastically reduce runtime.
 time_diff, new_deployment, and deployment_id are dropped and then files are written out.
 
-
-
-Steps for QC of Historic Data (Documentation of csv_qc.R)
-
-Step 1: Load ContDataQC
-The code used for this can be found in this GitHub repository: https://github.com/ctdeepwatermonitoring/water_temperature
-It can be installed with the code given in the file or it can be loaded from a local copy using devtools::load_all("/path/to/directory").
-
-Step 2: Initialize input and output directories
+Step 14: Initialize input and output directories
 Once initialized, all csv files are placed into a list and the total amount of files is found to show progress.
 
-Step 3: Loop through all csv files and produce QC files
+Step 15: Loop through all csv files and produce QC files
 File names are parsed for information needed for QC.
 The QC method does not work if there are less than 5 records in a file.
 If this is the case, default values are assigned and data flags are assigned as "X".

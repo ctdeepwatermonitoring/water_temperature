@@ -163,7 +163,7 @@ for (i in seq_along(qc_prep_files)) {
     print(paste("Skipped QC (too few rows). Wrote default file for", file_name))
     
   } else {
-    #Call QC method
+    #Call QC method. Uses config_deep2.R file.
     myData.Operation = "QCRaw"
     myData.SiteID = site_id
     myData.Type = "Water"
