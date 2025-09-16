@@ -1,14 +1,56 @@
 Alexander Towle
 Alexander.Towle@ct.gov
 Last updated: 2025-09-09
-Documentation of Data Cleaning and Processing
+Documentation of Data Pipeline, Cleaning, and Processing
 
 
 
 Required packages for cleaning and processing:
 RSQLite
 tidyverse
-ContDataQC (loaded automatically in csv_qc.R)
+ContDataQC
+(all loaded automatically in csv_qc.R, but make sure the first 2 have been previously installed.)
+
+
+
+File structure required for this program:
+
+home
+├── ContDataQC                                        #https://github.com/ctdeepwatermonitoring/water_temperature
+│   └── historic_temperature_project
+│       ├── csv_qc2.R
+│       ├── migration_prep2.R
+│       ├── config_deep2.R
+│       ├── data_to_qc
+│       ├── qced_data
+│       ├── raw_data                                  #DEPLOYMENT CSVS GO HERE
+│       └── migration_folder
+└── TemperatureDB                                     #https://github.com/ctdeepwatermonitoring/TemperatureDB
+    └── db
+        ├── cnf
+        │   └── user.cnf.txt
+        ├── testFTP
+        │   └── Upload
+        │       ├── ContData
+        │       ├── ErrRpts
+        │       └── UploadedRpts
+        │           └── Temperature
+        │               └── Error
+        └── db_app
+            ├── driver.py
+            └── insert_temp_results_cross_platform.py
+
+
+
+Documentation of driver script (driver.py)
+
+The driver script is designed to provide a relatively hands-off experience with data upload.
+When uploading more data, csvs of deployments just need to be placed in the raw_data folder (see above file structure) and the driver needs to be run.
+run_extra under def main() in driver.py can be set to False to stop after QC if a user would like to do EDA with qc_eda.R.
+Otherwise if run_extra is True it performs a few additional operations before uploading to the database.
+The rest of this documentation is for scripts used in the cleaning and upload process, as well as some documentation of EDA.
+
+
 
 Steps for Data Cleaning and QC of Historic Data (Documentation of csv_qc.R)
 
@@ -190,7 +232,6 @@ Points are color-coded with black for passing points, orange for suspect points,
 Steps to prepare historic data for migration into the modern database (Documentation of migration_prep.R)
 
 Step 1: Gather all csv files
-
 
 Step 2: Loop through the data, modify, and write out a new csv
 Each file is read, then modified to the expected format.
