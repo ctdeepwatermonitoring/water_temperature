@@ -178,7 +178,7 @@ for (i in seq_along(qc_prep_files)) {
     myReport.format = "html"
     myConfig = "/home/deepuser/ContDataQC/historic_temperature_project/config_deep2.R"
     
-    ContDataQC(myData.Operation,
+    ContDataQC::ContDataQC(myData.Operation,
                myData.SiteID,
                myData.Type,
                myData.DateRange.Start,

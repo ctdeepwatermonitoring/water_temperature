@@ -2,7 +2,7 @@ library(tidyverse)
 
 #Directories
 old_directory = "/home/deepuser/ContDataQC/historic_temperature_project/qced_data"
-new_directory = "/home/deepuser/ContDataQC/historic_temperature_project/migration_folder"
+new_directory = "/home/deepuser/TemperatureDB/testFTP/Upload/Cont_Data"
 
 #Check if directory exists and if not, create one
 if (!dir.exists(new_directory)) {
