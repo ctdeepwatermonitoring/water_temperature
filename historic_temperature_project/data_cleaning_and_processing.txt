@@ -46,8 +46,10 @@ Documentation of driver script (driver.py)
 
 The driver script is designed to provide a relatively hands-off experience with data upload.
 When uploading more data, csvs of deployments just need to be placed in the raw_data folder (see above file structure) and the driver needs to be run.
-run_extra under def main() in driver.py can be set to False to stop after QC if a user would like to do EDA with qc_eda.R.
-Otherwise if run_extra is True it performs a few additional operations before uploading to the database.
+run_qc under def main() is driver.py can be set to False to skip QC, if for example QC has already been done.
+Otherwise if run_qc is True it performs QC on the data.
+run_upload under def main() in driver.py can be set to False to stop after QC if a user would like to do EDA with qc_eda.R.
+Otherwise if run_upload is True it performs a few additional operations before uploading to the database.
 The rest of this documentation is for scripts used in the cleaning and upload process, as well as some documentation of EDA.
 
 
