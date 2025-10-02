@@ -98,8 +98,8 @@ for (i in seq_along(all_csv_files)) {
         ),
         UOM = case_when(
           UOM == "degC" ~ "deg C",
-          UOM == "deg" & temp < 30 ~ "deg C",
-          UOM == "Logged" & temp < 30 ~ "deg C",
+          UOM == "deg" & Temp < 30 ~ "deg C",
+          UOM == "Logged" & Temp < 30 ~ "deg C",
           TRUE ~ UOM
         )
       ) %>%
