@@ -3,6 +3,9 @@ library(tidyverse)
 #Directories
 old_directory = "/home/deepuser/ContDataQC/historic_temperature_project/qced_data"
 new_directory = "/home/deepuser/TemperatureDB/testFTP/Upload/Cont_Data"
+error_directory = "/home/deepuser/ContDataQC/historic_temperature_project/error_files"
+error_log = "/home/deepuser/ContDataQC/historic_temperature_project/error_files/error_log"
+script_name = "migration_prep2.R"
 
 #Check if directory exists and if not, create one
 if (!dir.exists(new_directory)) {
@@ -19,34 +22,55 @@ files_to_prep = list.files(
 
 #Go through all csv files
 for (f in files_to_prep) {
-  #Read data
-  data = read.csv(f, stringsAsFactors = FALSE, quote = "\"")
-  
-  data_out = data %>%
-    mutate(
-      dataFlag = Flag.Temp,
-      comment = ""
-    ) %>%
-    transmute(
-      Date_Time = as.character(Date_Time),
-      Temp = Temp,
-      UOM = UOM,
-      ProbeID = ProbeID,
-      SID = SID,
-      Collector = Collector,
-      ProbeType = ProbeType,
-      dataFlag = dataFlag,
-      comment = comment
+  tryCatch({
+    #Read data
+    data = read.csv(f, stringsAsFactors = FALSE, quote = "\"")
+    
+    data_out = data %>%
+      mutate(
+        dataFlag = Flag.Temp,
+        comment = ""
+      ) %>%
+      transmute(
+        Date_Time = as.character(Date_Time),
+        Temp = Temp,
+        UOM = UOM,
+        ProbeID = ProbeID,
+        SID = SID,
+        Collector = Collector,
+        ProbeType = ProbeType,
+        dataFlag = dataFlag,
+        comment = comment
+      )
+    
+    folder_name = basename(dirname(f))
+    parts = strsplit(folder_name, "_")[[1]]
+    probeID = parts[1]
+    
+    old_file_name = basename(f)
+    new_file_name = sub("^QC_", paste0("QC_", probeID, "_"), old_file_name)
+    
+    #Setting directory and writing out
+    new_file = file.path(new_directory, new_file_name)
+    write.csv(data_out, new_file, row.names = FALSE, na = "", quote = TRUE)
+  }, error = function(e) {
+    message(paste("Error processing file:", basename(f)))
+    message("Error message:", e$message)
+    error_file = file.path(
+      error_log,
+      paste0(tools::file_path_sans_ext(basename(f)), ".txt")
     )
-  
-  folder_name = basename(dirname(f))
-  parts = strsplit(folder_name, "_")[[1]]
-  probeID = parts[1]
-  
-  old_file_name = basename(f)
-  new_file_name = sub("^QC_", paste0("QC_", probeID, "_"), old_file_name)
-  
-  #Setting directory and writing out
-  new_file = file.path(new_directory, new_file_name)
-  write.csv(data_out, new_file, row.names = FALSE, na = "", quote = TRUE)
+      
+    writeLines(
+      c(
+        paste("Timestamp:", Sys.time()),
+        paste("Script:", script_name),
+        paste("File:", basename(f)),
+        paste("Error:", conditionMessage(e))
+      ),
+      con = error_file
+    )
+    
+    file.rename(f, file.path(error_directory, basename(f)))
+  })
 }

@@ -11,6 +11,8 @@ tidyverse
 ContDataQC
 (all loaded automatically in csv_qc.R, but make sure the first 2 have been previously installed.)
 
+Not always required, but useful: Set GitHub credentials in the R environment using gitcreds::gitcreds_set()
+
 
 
 File structure required for this program:
@@ -24,6 +26,8 @@ home
 │       ├── data_to_qc
 │       ├── qced_data
 │       ├── raw_data                                  #DEPLOYMENT CSVS GO HERE
+│       ├── error_files
+│       │   └── error_log
 │       └── migration_folder
 └── TemperatureDB                                     #https://github.com/ctdeepwatermonitoring/TemperatureDB
     └── db
@@ -106,7 +110,7 @@ All these values are converted to 24-hour time and drop their date (ex. 12/15/20
 Step 11: Dropping duplicates
 Some probes produce duplicate readings with different time formats and createDates.
 ex.
-probeID staSeq  mDate       mTime                   paramter            temp    uom         createDate          comment
+probeID staSeq  mDate       mTime                   parameter           temp    uom         createDate          comment
 2238339 14444   2010-10-13  10/13/2010 6:00:00 PM   Water Temperature   12.92   Degrees C   2011-05-18 00:00:00 NA
 2238339 14444   2010-10-13  6:00:00 PM              Water Temperature   12.92   Degrees C   2012-02-06 00:00:00 NA
 Because times were standardized in Step 7, the duplicates can be dropped.
@@ -191,6 +195,10 @@ Step 7: Call QC method
 For deployments with 5 or more entries, the QC method is called.
 Files with QC values and data for internal processing are written to the output directory.
 For the modern data, the config_deep2.R file must be used in the QC method call.
+
+Note: Any errors throughout this process will result in the offending file moved into the folder error_files.
+A log of the error will be created in the subfolder of error_files called error_log.
+Common errors are handled after reading the csv, but procedures may need to be adjusted as new data is acquired.
 
 
 
