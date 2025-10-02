@@ -1,8 +1,0 @@
-Timestamp: 2025-10-02 14:33:41.791447
-Script: csv_qc2.R
-File: 9859185_15240_Hubbard_Brook_060915@0936_Fall_2014_Deployment.csv
-Error: [38;5;232m[36mℹ[38;5;232m In argument: `UOM = case_when(...)`.[39m
-[1mCaused by error in `case_when()`:[22m
-[38;5;232m[33m![38;5;232m Failed to evaluate the left-hand side of formula 2.[39m
-[1mCaused by error:[22m
-[33m![39m object 'temp' not found
