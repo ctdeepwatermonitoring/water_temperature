@@ -208,7 +208,7 @@ http://www.intowindows.com/how-to-run-msi-file-as-administrator-from-command-pro
 <span class="r-in"><span>                   , <span class="st">"Data3_Aggregated"</span></span></span>
 <span class="r-in"><span>                   , <span class="st">"Data4_Stats"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">(</span><span class="va">myDir.BASE</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="co"># create and print temp directory for example data</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "/var/folders/q0/wmf37v850txck86cpnvwm_zw0000gn/T//Rtmpfp9mGH"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "/var/folders/q0/wmf37v850txck86cpnvwm_zw0000gn/T//RtmprOWWcF"</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Create data directories</span></span></span>
 <span class="r-in"><span><span class="va">myDir.create</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">myDir.BASE</span>, <span class="va">Selection.SUB</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span></span>
@@ -290,14 +290,14 @@ http://www.intowindows.com/how-to-run-msi-file-as-administrator-from-command-pro
 <span class="r-out co"><span class="r-pr">#&gt;</span> 530       NGVD29 010802070301           uv   00060    &lt;NA&gt; 66866         NA</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 531       NGVD29 010802070301           uv   00065    &lt;NA&gt; 66867         NA</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     medium_grp_cd parm_grp_cd   srs_id access_cd begin_date   end_date count_nu</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 530           wat        &lt;NA&gt;  1645423         0 1990-10-01 2025-09-19    12772</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 531           wat        &lt;NA&gt; 17164583         0 2007-10-01 2025-09-19     6563</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 530           wat        &lt;NA&gt;  1645423         0 1990-10-01 2025-10-03    12786</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 531           wat        &lt;NA&gt; 17164583         0 2007-10-01 2025-10-03     6577</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> GET: https://nwis.waterservices.usgs.gov/nwis/iv/?site=01187300&amp;format=waterml%2C1.1&amp;ParameterCd=00060%2C00065&amp;startDT=2013-01-01&amp;endDT=2014-12-31</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing item 1 of 1, COMPLETE, 01187300."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Task COMPLETE; 0.11 min."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Task COMPLETE; 0.15 min."</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># 01.B. Get Gage Data (central time zone)</span></span></span>
 <span class="r-in"><span><span class="va">myData.Operation</span>       <span class="op">&lt;-</span> <span class="st">"GetGageData"</span> <span class="co">#Selection.Operation[1]</span></span></span>
@@ -337,8 +337,8 @@ http://www.intowindows.com/how-to-run-msi-file-as-administrator-from-command-pro
 <span class="r-out co"><span class="r-pr">#&gt;</span> 515 08010100           uv   00065    &lt;NA&gt; 131635         NA           wat</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 516 08010100           uv   63680    &lt;NA&gt; 320391         NA           wat</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     parm_grp_cd   srs_id access_cd begin_date   end_date count_nu</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 514        &lt;NA&gt;  1645423         0 2014-10-01 2025-09-19     4006</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 515        &lt;NA&gt; 17164583         0 2011-05-09 2025-09-19     5247</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 514        &lt;NA&gt;  1645423         0 2014-10-01 2025-10-03     4020</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 515        &lt;NA&gt; 17164583         0 2011-05-09 2025-10-03     5261</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 516        &lt;NA&gt;  1640507         0 2023-01-23 2025-08-13      933</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> GET: https://nwis.waterservices.usgs.gov/nwis/iv/?site=07032000&amp;format=waterml%2C1.1&amp;ParameterCd=00060%2C00065%2C63680&amp;startDT=2013-01-01&amp;endDT=2014-12-31</span>
@@ -441,7 +441,7 @@ http://www.intowindows.com/how-to-run-msi-file-as-administrator-from-command-pro
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing item 3 of 4, COMPLETE, QC_test2_Aw_20140901_20140930.csv."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing item 4 of 4, SKIPPED (Non-Match, SiteID), QC_test4_Aw_20160418_20160726.csv."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing of 4 of 4 files complete."</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing of items (n=4) finished.  Total time = 0.872438 secs."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing of items (n=4) finished.  Total time = 1.130814 secs."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Items COMPLETE = 3."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Items SKIPPPED = 1."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "User defined parameters: SiteID (test2), Data Type (Aw), Date Range (2013-01-01 to 2014-12-31)."</span>
@@ -526,7 +526,7 @@ http://www.intowindows.com/how-to-run-msi-file-as-administrator-from-command-pro
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing item 2 of 3, COMPLETE, QC_test2_Aw_20130725_20131015.csv."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing item 3 of 3, COMPLETE, QC_test2_Aw_20140901_20140930.csv."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing of 3 of 3 files complete."</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing of items (n=3) finished.  Total time = 1.115439 secs."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing of items (n=3) finished.  Total time = 0.9421461 secs."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Items COMPLETE = 3."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Items SKIPPPED = 0."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "User defined parameters: File Output(DATA_QC_test2_Aw_20130426_20140930.csv)."</span>
@@ -546,7 +546,7 @@ http://www.intowindows.com/how-to-run-msi-file-as-administrator-from-command-pro
 <span class="r-in"><span>           , fun.myFile <span class="op">=</span> <span class="va">myFile</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Total files to process = 1"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "ERROR; no such file exits.  Cannot generate summary statistics."</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "PATH = /var/folders/q0/wmf37v850txck86cpnvwm_zw0000gn/T//Rtmpfp9mGH/Data2_QC"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "PATH = /var/folders/q0/wmf37v850txck86cpnvwm_zw0000gn/T//RtmprOWWcF/Data2_QC"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "FILE = QC_test2_AW_20130426_20130725.csv"</span>
 <span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in fun.Stats.File(fun.myFile, fun.myDir.import, fun.myDir.export,     fun.myReport.format, fun.myReport.Dir):</span> Bad file.</span>
 <span class="r-in"><span></span></span>
@@ -603,7 +603,7 @@ http://www.intowindows.com/how-to-run-msi-file-as-administrator-from-command-pro
 <span class="r-in"><span><span class="co"># Lake Data, Aggregate</span></span></span>
 <span class="r-in"><span><span class="co">#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span></span></span>
 <span class="r-in"><span><span class="op">(</span><span class="va">myDir.BASE</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="co"># create and print temp directory for example data</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "/var/folders/q0/wmf37v850txck86cpnvwm_zw0000gn/T//Rtmpfp9mGH"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "/var/folders/q0/wmf37v850txck86cpnvwm_zw0000gn/T//RtmprOWWcF"</span>
 <span class="r-in"><span><span class="co"># 06. Lake Data</span></span></span>
 <span class="r-in"><span><span class="co"># Save example data (assumes directory exists)</span></span></span>
 <span class="r-in"><span><span class="va">myFile</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"QC_Ellis--1.0m_Water_20180524_20180918.csv"</span></span></span>
@@ -627,7 +627,7 @@ http://www.intowindows.com/how-to-run-msi-file-as-administrator-from-command-pro
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing item 1 of 2, COMPLETE, QC_Ellis--1.0m_Water_20180524_20180918.csv."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing item 2 of 2, COMPLETE, QC_Ellis--3.0m_Water_20180524_20180918.csv."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing of 2 of 2 files complete."</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing of items (n=2) finished.  Total time = 0.2442119 secs."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Processing of items (n=2) finished.  Total time = 0.306843 secs."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Items COMPLETE = 2."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Items SKIPPPED = 0."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "User defined parameters: File Output(DATA_QC_Ellis--1.0m_Water_20180524_20180918.csv)."</span>
