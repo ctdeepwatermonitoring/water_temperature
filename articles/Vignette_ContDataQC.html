@@ -86,7 +86,7 @@
       <h1 data-toc-skip>ContDataQC Vignette</h1>
                         <h4 data-toc-skip class="author">Erik W. Leppo</h4>
             
-            <h4 data-toc-skip class="date">2025-10-03</h4>
+            <h4 data-toc-skip class="date">2025-11-04</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/USEPA/ContDataQC/blob/main/vignettes/Vignette_ContDataQC.Rmd" class="external-link"><code>vignettes/Vignette_ContDataQC.Rmd</code></a></small>
       <div class="hidden name"><code>Vignette_ContDataQC.Rmd</code></div>
@@ -270,7 +270,7 @@ This necessitated a change in the R library <code>dataRetrieval</code>. As of th
 <span>                   , <span class="st">"Data3_Aggregated"</span></span>
 <span>                   , <span class="st">"Data4_Stats"</span><span class="op">)</span></span>
 <span><span class="op">(</span><span class="va">myDir.BASE</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="co"># create and print temp directory for example data</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] "/var/folders/q0/wmf37v850txck86cpnvwm_zw0000gn/T//RtmpMbgMic"</span></span></code></pre>
+<pre><code><span><span class="co">## [1] "/var/folders/xc/cl1fyykn2pj4ryhdw6r1mqtc0000gn/T//RtmpsnR4ax"</span></span></code></pre>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Create data directories</span></span>
 <span><span class="va">myDir.create</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">myDir.BASE</span>, <span class="va">Selection.SUB</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span>
@@ -336,8 +336,8 @@ This necessitated a change in the R library <code>dataRetrieval</code>. As of th
 <span><span class="co">## 530       NGVD29 010802070301           uv   00060    &lt;NA&gt; 66866         NA</span></span>
 <span><span class="co">## 531       NGVD29 010802070301           uv   00065    &lt;NA&gt; 66867         NA</span></span>
 <span><span class="co">##     medium_grp_cd parm_grp_cd   srs_id access_cd begin_date   end_date count_nu</span></span>
-<span><span class="co">## 530           wat        &lt;NA&gt;  1645423         0 1990-10-01 2025-10-03    12786</span></span>
-<span><span class="co">## 531           wat        &lt;NA&gt; 17164583         0 2007-10-01 2025-10-03     6577</span></span></code></pre>
+<span><span class="co">## 530           wat        &lt;NA&gt;  1645423         0 1990-10-01 2025-11-04    12818</span></span>
+<span><span class="co">## 531           wat        &lt;NA&gt; 17164583         0 2007-10-01 2025-11-04     6609</span></span></code></pre>
 <pre><code><span><span class="co">## GET: https://nwis.waterservices.usgs.gov/nwis/iv/?site=01187300&amp;format=waterml%2C1.1&amp;ParameterCd=00060%2C00065&amp;startDT=2013-01-01&amp;endDT=2014-12-31</span></span></code></pre>
 <pre><code><span><span class="co">## </span></span>
 <span><span class="co">## [1] "Processing item 1 of 1, COMPLETE, 01187300."</span></span>
@@ -1492,7 +1492,7 @@ This example makes use of the <code>XLConnect</code> R library to save the IHA o
 <p><a href="https://github.com/leppott/BioMonTools" class="external-link uri">https://github.com/leppott/BioMonTools</a></p>
 <p>The function takes a three column data frame (SampleID, TaxonID, Count) and returns a similar dataframe with revised Counts.</p>
 <div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">BioMonTools</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/leppott/BioMonTools" class="external-link">BioMonTools</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Subsample to 500 organisms (from over 500 organisms) for 12 samples.</span></span>
 <span></span>
@@ -2131,7 +2131,7 @@ There are R packages designed for the analysis of lake monitoring data. One such
 <p>To aid users in QCing their continuous lake data an export function to <code>rLakeAnalyzer</code> was created in the <code>ContDataQC</code> package.</p>
 <div class="sourceCode" id="cb56"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="op">(</span><span class="va">myDir.BASE</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="co"># create and print temp directory for example data</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] "/var/folders/q0/wmf37v850txck86cpnvwm_zw0000gn/T//RtmpMbgMic"</span></span></code></pre>
+<pre><code><span><span class="co">## [1] "/var/folders/xc/cl1fyykn2pj4ryhdw6r1mqtc0000gn/T//RtmpsnR4ax"</span></span></code></pre>
 <div class="sourceCode" id="cb58"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Convert Data for use with rLakeAnalyzer</span></span>
 <span></span>
