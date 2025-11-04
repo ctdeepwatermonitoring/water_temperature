@@ -1,0 +1,154 @@
+Alexander Towle
+Alexander.Towle@ct.gov
+Last updated: 2025-10-31
+Documentation of trend tests and visualizations
+
+Documentation of processes mann_kendall.R:
+
+Required libraries:
+tidyverse
+broom
+ggforce
+Kendall
+patchwork
+scales
+EnvStats
+
+Helpers and constants:
+COLD_MAX is set to 18.29, the maximum value considered to be cold water for fish communities.
+WARM_MIN is set to 21.70, the minimum value considered to be warm water for fish communities.
+
+THRESHOLD_LINES_LEGEND is a tibble used as labels for the plots.
+THRESHOLD_COLORS defines the colors used in the charts for each threshold.
+THRESHOLD_LINETYPES sets solid lines to use in the plots.
+
+clean_sites is a function that takes a dataframe, standardizes STA_SEQ as a character, and selects it as well as the WaterbodyName.
+
+theil_sen is a function that computes theil-sen slopes given two numeric variables x and y.
+
+build_mk_label is a function that creates labels from a dataframe using tau, slope, and p-value.
+
+
+Initial Steps:
+The temperature data is read in from the csv along with the list of sites and a landscape cover file.
+Temp data is cleaned with clean_sites.
+Daily mean temperatures are calculated for each site on a certain date, and sites are joined to the waterbody name and filtered to those in the landscape cover file.
+
+
+Mann-Kendall for Summer Temperature Trend Steps:
+Mean or median can be selected interchangeably as the desired method for average at the beginning of any of the Mann-Kendall tests in this file.
+Average temperatures for summer are calculated for each site each year from the daily means.
+Using the Kendall package, a Mann-Kendall trend test is conducted on temperature and year for sites with 10 or more years of data.
+The averages are joined to the results of the Mann-Kendall test and an intercept is calculated.
+A summary is created grouped by station id and waterbody name, including number of years of data, the minimum and maximum year, the minimum and maximum average temp, tau, p-value, theil-sen slope, and intercept.
+Labels are created and the sites are split into facets and plotted.
+Threshold lines are decided upon based upon the range of the data present.
+Pages consisting of 3x3 scatter plots will be produced containing the year on the x-axis and summer averages on the y-axis, connected by a line over time.
+Threshold lines are drawn for comparison, and Theil-Sen slopes are shown with a trendline.
+Sites with p-value < 0.05:
+15520 - Bonemill Brook - 0.0359
+15315 - Burnham Brook - 0.0422
+15020 - Eightmile River - 0.0043
+14720 - Green Fall River - 0.0472
+Sites with 0.05 < p-value < 0.1:
+15304 - Eagleville Brook - 0.0863
+14800 - Steele Brook - 0.0763
+14584 - Roaring Brook - 0.0855
+14414 - Quinnipiac River - 0.0801
+14390 - Pequabuck River - 0.0573
+
+
+Seasonal Mann-Kendall Trend Test for Summer Months Steps:
+Mean or median can be selected interchangeably as the desired method for average at the beginning of any of the Mann-Kendall tests in this file.
+Average temperatures for each summer month are calculated individually for each site each year from the daily means.
+Using the EnvStats package, a Seasonal Mann-Kendall trend test is conducted on temperature and year for sites with 10 or more years of data, using each of the three summer months as seasons.
+The averages are joined to the results of the Seasonal Mann-Kendall test and an intercept is calculated.
+A summary is created grouped by station id and waterbody name, including number of years of data, the minimum and maximum year, the minimum and maximum average temp, tau, p-value, theil-sen slope, and intercept.
+Labels are created and the sites are split into facets and plotted.
+Threshold lines are decided upon based upon the range of the data present.
+Pages consisting of 3x3 scatter plots will be produced containing the year on the x-axis and summer averages on the y-axis, connected by a line over time.
+Three dots can be expected per year for sites with all summer months of data.
+Threshold lines are drawn for comparison, and Theil-Sen slopes are shown with a trendline.
+Sites with p-value < 0.05:
+16110 - Mott Hill Brook - 0.0377
+15964 - Thompson Brook - 0.0258
+15315 - Burnham Brook - 0.0183
+15304 - Eagleville Brook - 0.0023
+15020 - Eightmile River - 0.0002
+14800 - Steele Brook - 0.0317
+14720 - Green Fall River - 0.0431
+14390 - Pequabuck River - 0.0374
+Sites with 0.05 < p-value < 0.1:
+15520 - Bonemill Brook - 0.0520
+15312 - Beaver Brook - 0.0791
+14441 - Salmon River - 0.0534
+14392 - Pequabuck River - 0.0551
+14361 - Norwalk River - 0.0629
+
+
+Seasonal Mann-Kendall Trend Test for Meteorological Seasons Steps:
+Mean or median can be selected interchangeably as the desired method for average at the beginning of any of the Mann-Kendall tests in this file.
+Average temperatures for each meteorological season are calculated individually for each site each year from the daily means.
+Using the EnvStats package, a Seasonal Mann-Kendall trend test is conducted on temperature and year for sites with 10 or more years of data, using each of the four meteorological seasons as seasons.
+The averages are joined to the results of the Seasonal Mann-Kendall test and an intercept is calculated.
+A summary is created grouped by station id and waterbody name, including number of years of data, the minimum and maximum year, the minimum and maximum average temp, tau, p-value, theil-sen slope, and intercept.
+Labels are created and the sites are split into facets and plotted.
+Threshold lines are decided upon based upon the range of the data present.
+Pages consisting of 3x3 scatter plots will be produced containing the year on the x-axis and season averages on the y-axis, connected by a line over time.
+Four dots can be expected per year for sites with all seasons of data.
+Threshold lines are drawn for comparison, and Theil-Sen slopes are shown with a trendline.
+A comparison heatmap is also drawn to show how many years of data each season has for each site.
+Sites with p-value < 0.05:
+16387 - Hurricane Brook - 0.0324
+15796 - Pendleton Hill Brook - 0.0121
+15783 - Eagleville Brook - 0.0400
+15499 - West Branch Salmon Brook - 0.0344
+15304 - Eagleville Brook - 0.0009
+15020 - Eightmile River - 0.0353
+14800 - Steele Brook - 0.0160
+14444 - Saugatuck River - 0.0318
+14441 - Salmon River - 0.0374
+14414 - Quinnipiac River - 0.0033
+Sites with 0.05 < p-value < 0.1:
+16335 - Nonewaug (Nonnewaug River) - 0.0903
+16139 - Brown Brook - 0.0725
+15315 - Burnham Brook - 0.0546
+14706 - Whitford Brook - 0.0621
+14584 - Roaring Brook - 0.0808
+14461 - Sandy Brook (Still River) - 0.0501
+
+
+Seasonal Mann-Kendall Trend Test for Bioperiods Steps:
+Mean or median can be selected interchangeably as the desired method for average at the beginning of any of the Mann-Kendall tests in this file.
+Average temperatures for each bioperiod are calculated individually for each site each year from the daily means.
+Using the EnvStats package, a Seasonal Mann-Kendall trend test is conducted on temperature and year for sites with 10 or more years of data, using each of the six bioperiods as seasons.
+The averages are joined to the results of the Seasonal Mann-Kendall test and an intercept is calculated.
+A summary is created grouped by station id and waterbody name, including number of years of data, the minimum and maximum year, the minimum and maximum average temp, tau, p-value, theil-sen slope, and intercept.
+Labels are created and the sites are split into facets and plotted.
+Threshold lines are decided upon based upon the range of the data present.
+Pages consisting of 3x3 scatter plots will be produced containing the year on the x-axis and bioperiod averages on the y-axis, connected by a line over time.
+Six dots can be expected per year for sites with all bioperiods of data.
+Threshold lines are drawn for comparison, and Theil-Sen slopes are shown with a trendline.
+A comparison heatmap is also drawn to show how many years of data each bioperiod has for each site.
+Sites with p-value < 0.05:
+15796 - Pendleton Hill Brook - 0.0082
+15499 - West Branch Salmon Brook - 0.0473
+15315 - Burnham Brook - 0.0097
+15304 - Eagleville Brook - 0.0008
+15020 - Eightmile River - 0.0043
+14800 - Steele Brook - 0.0203
+14706 - Whitford Brook - 0.0216
+14441 - Salmon River - 0.0183
+Sites with 0.05 < p-value < 0.1:
+14720 - Green Fall River - 0.0891
+14461 - Sandy Brook (Still River) - 0.0645
+14451 - Shetucket River - 0.0721
+14444 - Saugatuck River - 0.0779
+
+
+Steps for Comparisons of Significant Values Across Tests:
+Results for each testing method are given a column indicating the test and then filtered to only those sites with a p-value of less thna 0.1.
+Rows of the results are bound and a pivot table is created which shows the test method, the site, and the p-value.
+A tile plot is created for ease of viewing
+The bound dataframe is filtered to p-values < 0.05 and the process is repeated.
+
