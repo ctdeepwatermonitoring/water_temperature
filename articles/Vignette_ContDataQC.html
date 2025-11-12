@@ -86,7 +86,7 @@
       <h1 data-toc-skip>ContDataQC Vignette</h1>
                         <h4 data-toc-skip class="author">Erik W. Leppo</h4>
             
-            <h4 data-toc-skip class="date">2025-11-04</h4>
+            <h4 data-toc-skip class="date">2025-11-12</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/USEPA/ContDataQC/blob/main/vignettes/Vignette_ContDataQC.Rmd" class="external-link"><code>vignettes/Vignette_ContDataQC.Rmd</code></a></small>
       <div class="hidden name"><code>Vignette_ContDataQC.Rmd</code></div>
@@ -270,7 +270,7 @@ This necessitated a change in the R library <code>dataRetrieval</code>. As of th
 <span>                   , <span class="st">"Data3_Aggregated"</span></span>
 <span>                   , <span class="st">"Data4_Stats"</span><span class="op">)</span></span>
 <span><span class="op">(</span><span class="va">myDir.BASE</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="co"># create and print temp directory for example data</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] "/var/folders/xc/cl1fyykn2pj4ryhdw6r1mqtc0000gn/T//RtmpsnR4ax"</span></span></code></pre>
+<pre><code><span><span class="co">## [1] "/var/folders/6c/pzd640_546q6_yfn24r65c_40000gn/T//RtmpVsj4f0"</span></span></code></pre>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Create data directories</span></span>
 <span><span class="va">myDir.create</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">myDir.BASE</span>, <span class="va">Selection.SUB</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span>
@@ -336,13 +336,13 @@ This necessitated a change in the R library <code>dataRetrieval</code>. As of th
 <span><span class="co">## 530       NGVD29 010802070301           uv   00060    &lt;NA&gt; 66866         NA</span></span>
 <span><span class="co">## 531       NGVD29 010802070301           uv   00065    &lt;NA&gt; 66867         NA</span></span>
 <span><span class="co">##     medium_grp_cd parm_grp_cd   srs_id access_cd begin_date   end_date count_nu</span></span>
-<span><span class="co">## 530           wat        &lt;NA&gt;  1645423         0 1990-10-01 2025-11-04    12818</span></span>
-<span><span class="co">## 531           wat        &lt;NA&gt; 17164583         0 2007-10-01 2025-11-04     6609</span></span></code></pre>
+<span><span class="co">## 530           wat        &lt;NA&gt;  1645423         0 1990-10-01 2025-11-12    12826</span></span>
+<span><span class="co">## 531           wat        &lt;NA&gt; 17164583         0 2007-10-01 2025-11-12     6617</span></span></code></pre>
 <pre><code><span><span class="co">## GET: https://nwis.waterservices.usgs.gov/nwis/iv/?site=01187300&amp;format=waterml%2C1.1&amp;ParameterCd=00060%2C00065&amp;startDT=2013-01-01&amp;endDT=2014-12-31</span></span></code></pre>
 <pre><code><span><span class="co">## </span></span>
 <span><span class="co">## [1] "Processing item 1 of 1, COMPLETE, 01187300."</span></span>
 <span><span class="co">## </span></span>
-<span><span class="co">## [1] "Task COMPLETE; 0.12 min."</span></span></code></pre>
+<span><span class="co">## [1] "Task COMPLETE; 0.09 min."</span></span></code></pre>
 <p>Example of getting gage data in a different time zone specified in user modified configuration file.</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/USEPA/ContDataQC" class="external-link">ContDataQC</a></span><span class="op">)</span></span>
@@ -1927,7 +1927,7 @@ The second plot is a CDF of values. The line represents the proportion of values
 </tr>
 </tbody>
 </table>
-<p>An example plot is shown below. The column names from the input table will appear in the legend of the plot. <img src="Vignette_ContDataQC_files/figure-html/CompSiteCDF_plot-1.png" width="672"><img src="Vignette_ContDataQC_files/figure-html/CompSiteCDF_plot-2.png" width="672"></p>
+<p>An example plot is shown below. The column names from the input table will appear in the legend of the plot. <img src="Vignette_ContDataQC_files/figure-html/CompSiteCDF_plot-1.png" class="r-plt" width="672"><img src="Vignette_ContDataQC_files/figure-html/CompSiteCDF_plot-2.png" class="r-plt" width="672"></p>
 </div>
 <div class="section level3">
 <h3 id="richards-baker-flashiness-index">Richards-Baker (Flashiness) Index<a class="anchor" aria-label="anchor" href="#richards-baker-flashiness-index"></a>
@@ -2131,7 +2131,7 @@ There are R packages designed for the analysis of lake monitoring data. One such
 <p>To aid users in QCing their continuous lake data an export function to <code>rLakeAnalyzer</code> was created in the <code>ContDataQC</code> package.</p>
 <div class="sourceCode" id="cb56"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="op">(</span><span class="va">myDir.BASE</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="co"># create and print temp directory for example data</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] "/var/folders/xc/cl1fyykn2pj4ryhdw6r1mqtc0000gn/T//RtmpsnR4ax"</span></span></code></pre>
+<pre><code><span><span class="co">## [1] "/var/folders/6c/pzd640_546q6_yfn24r65c_40000gn/T//RtmpVsj4f0"</span></span></code></pre>
 <div class="sourceCode" id="cb58"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Convert Data for use with rLakeAnalyzer</span></span>
 <span></span>
@@ -2302,7 +2302,7 @@ There are R packages designed for the analysis of lake monitoring data. One such
 <span></span>
 <span><span class="co"># Plot, Show</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/XLConnect/man/print-methods.html" class="external-link">print</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Vignette_ContDataQC_files/figure-html/rLA_Example-1.png" width="700"></p>
+<p><img src="Vignette_ContDataQC_files/figure-html/rLA_Example-1.png" class="r-plt" width="700"></p>
 <div class="sourceCode" id="cb61"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span></span>
 <span><span class="co"># use rLakeAnalyzer</span></span>
@@ -2393,11 +2393,11 @@ There are R packages designed for the analysis of lake monitoring data. One such
 <div class="sourceCode" id="cb63"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Generate Heat Map</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/rLakeAnalyzer/man/wtr.heat.map.html" class="external-link">wtr.heat.map</a></span><span class="op">(</span><span class="va">df_rLA_wtr</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Vignette_ContDataQC_files/figure-html/rLA_Example-2.png" width="700"></p>
+<p><img src="Vignette_ContDataQC_files/figure-html/rLA_Example-2.png" class="r-plt" width="700"></p>
 <div class="sourceCode" id="cb64"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Generate Schmidt Plot</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/rLakeAnalyzer/man/schmidt.plot.html" class="external-link">schmidt.plot</a></span><span class="op">(</span><span class="va">df_rLA_wtr</span>, <span class="va">df_rLA_bth</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Vignette_ContDataQC_files/figure-html/rLA_Example-3.png" width="700"></p>
+<p><img src="Vignette_ContDataQC_files/figure-html/rLA_Example-3.png" class="r-plt" width="700"></p>
 <div class="sourceCode" id="cb65"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Generate Schmidt Stability Values</span></span>
 <span><span class="va">df_rLA_Schmidt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/rLakeAnalyzer/man/ts.schmidt.stability.html" class="external-link">ts.schmidt.stability</a></span><span class="op">(</span><span class="va">df_rLA_wtr</span>, <span class="va">df_rLA_bth</span><span class="op">)</span></span>
@@ -2657,7 +2657,7 @@ The script was contributed by Mark Hoger of PA DEP. This script is saved in the 
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
       </footer>
