@@ -74,7 +74,7 @@ daily_means = initial_data %>%
   ) %>%
   group_by(staSeq, date, year, month) %>%
   summarise(mean_temp = mean(temp, na.rm = TRUE), .groups = "drop") %>%
-  filter(staSeq %in% landscape_cover$staSeq) %>%
+  #filter(staSeq %in% landscape_cover$staSeq) %>%
   left_join(
     sites_clean %>%
       select(STA_SEQ, WaterbodyName),
@@ -86,7 +86,7 @@ daily_means = initial_data %>%
 
 
 #Mann-Kendall trend test
-temp_stat = "mean"
+temp_stat = "median"
 
 temp_label = ifelse(temp_stat == "mean", "Mean", "Median")
 
@@ -249,7 +249,8 @@ page_plots[[3]]
 page_plots[[4]]
 page_plots[[5]]
 page_plots[[6]]
-
+page_plots[[7]]
+page_plots[[8]]
 
 
 
@@ -257,7 +258,7 @@ page_plots[[6]]
 
 
 #Seasonal Mann-Kendall trend test for summer months
-temp_stat = "mean"
+temp_stat = "median"
 
 temp_label = ifelse(temp_stat == "mean", "Mean", "Median")
 
@@ -426,6 +427,8 @@ page_plots[[3]]
 page_plots[[4]]
 page_plots[[5]]
 page_plots[[6]]
+page_plots[[7]]
+page_plots[[8]]
 
 
 
@@ -433,7 +436,7 @@ page_plots[[6]]
 
 
 #Seasonal Mann-Kendall trend test for all seasons
-temp_stat = "mean"
+temp_stat = "median"
 
 temp_label = ifelse(temp_stat == "mean", "Mean", "Median")
 
@@ -631,6 +634,9 @@ page_plots[[3]]
 page_plots[[4]]
 page_plots[[5]]
 page_plots[[6]]
+page_plots[[7]]
+page_plots[[8]]
+page_plots[[9]]
 
 
 
@@ -639,7 +645,7 @@ page_plots[[6]]
 
 
 #Seasonal Mann-Kendall trend test for bioperiods
-temp_stat = "mean"
+temp_stat = "median"
 
 temp_label = ifelse(temp_stat == "mean", "Mean", "Median")
 
@@ -838,6 +844,9 @@ page_plots[[3]]
 page_plots[[4]]
 page_plots[[5]]
 page_plots[[6]]
+page_plots[[7]]
+page_plots[[8]]
+page_plots[[9]]
 
 
 
@@ -892,7 +901,7 @@ ggplot(
   geom_text(aes(label = ifelse(is.na(value), "", sprintf("%.4f", value))),
             size = 3.2, color = "black") +
   labs(
-    title = "Comparison of Significant MK Results (p-values < 0.1)",
+    title = "Comparison of Significant MK Results Using Median (p-values < 0.1)",
     x = "SMK Method",
     y = "Station"
   ) +
@@ -914,7 +923,7 @@ ggplot(
   geom_text(aes(label = ifelse(is.na(value), "", sprintf("%.4f", value))),
             size = 3.2, color = "black") +
   labs(
-    title = "Comparison of Significant MK Results (p-values < 0.05)",
+    title = "Comparison of Significant MK Results Using Median (p-values < 0.05)",
     x = "SMK Method",
     y = "Station"
   ) +
@@ -924,3 +933,12 @@ ggplot(
     panel.grid = element_blank()
   )
 
+
+
+
+#Set differences
+setdiff(smk_seasonal_results_summary$staSeq, smk_bioperiod_results_summary$staSeq)
+setdiff(smk_bioperiod_results_summary$staSeq, smk_seasonal_results_summary$staSeq)
+
+setdiff(smk_results_summary$staSeq, smk_bioperiod_results_summary$staSeq)
+setdiff(smk_bioperiod_results_summary$staSeq, smk_results_summary$staSeq)

@@ -32,7 +32,7 @@ build_mk_label is a function that creates labels from a dataframe using tau, slo
 Initial Steps:
 The temperature data is read in from the csv along with the list of sites and a landscape cover file.
 Temp data is cleaned with clean_sites.
-Daily mean temperatures are calculated for each site on a certain date, and sites are joined to the waterbody name and filtered to those in the landscape cover file.
+Daily mean temperatures are calculated for each site on a certain date, and sites are joined to the waterbody name.
 
 
 Mann-Kendall for Summer Temperature Trend Steps:
@@ -45,17 +45,6 @@ Labels are created and the sites are split into facets and plotted.
 Threshold lines are decided upon based upon the range of the data present.
 Pages consisting of 3x3 scatter plots will be produced containing the year on the x-axis and summer averages on the y-axis, connected by a line over time.
 Threshold lines are drawn for comparison, and Theil-Sen slopes are shown with a trendline.
-Sites with p-value < 0.05:
-15520 - Bonemill Brook - 0.0359
-15315 - Burnham Brook - 0.0422
-15020 - Eightmile River - 0.0043
-14720 - Green Fall River - 0.0472
-Sites with 0.05 < p-value < 0.1:
-15304 - Eagleville Brook - 0.0863
-14800 - Steele Brook - 0.0763
-14584 - Roaring Brook - 0.0855
-14414 - Quinnipiac River - 0.0801
-14390 - Pequabuck River - 0.0573
 
 
 Seasonal Mann-Kendall Trend Test for Summer Months Steps:
@@ -69,21 +58,6 @@ Threshold lines are decided upon based upon the range of the data present.
 Pages consisting of 3x3 scatter plots will be produced containing the year on the x-axis and summer averages on the y-axis, connected by a line over time.
 Three dots can be expected per year for sites with all summer months of data.
 Threshold lines are drawn for comparison, and Theil-Sen slopes are shown with a trendline.
-Sites with p-value < 0.05:
-16110 - Mott Hill Brook - 0.0377
-15964 - Thompson Brook - 0.0258
-15315 - Burnham Brook - 0.0183
-15304 - Eagleville Brook - 0.0023
-15020 - Eightmile River - 0.0002
-14800 - Steele Brook - 0.0317
-14720 - Green Fall River - 0.0431
-14390 - Pequabuck River - 0.0374
-Sites with 0.05 < p-value < 0.1:
-15520 - Bonemill Brook - 0.0520
-15312 - Beaver Brook - 0.0791
-14441 - Salmon River - 0.0534
-14392 - Pequabuck River - 0.0551
-14361 - Norwalk River - 0.0629
 
 
 Seasonal Mann-Kendall Trend Test for Meteorological Seasons Steps:
@@ -98,24 +72,6 @@ Pages consisting of 3x3 scatter plots will be produced containing the year on th
 Four dots can be expected per year for sites with all seasons of data.
 Threshold lines are drawn for comparison, and Theil-Sen slopes are shown with a trendline.
 A comparison heatmap is also drawn to show how many years of data each season has for each site.
-Sites with p-value < 0.05:
-16387 - Hurricane Brook - 0.0324
-15796 - Pendleton Hill Brook - 0.0121
-15783 - Eagleville Brook - 0.0400
-15499 - West Branch Salmon Brook - 0.0344
-15304 - Eagleville Brook - 0.0009
-15020 - Eightmile River - 0.0353
-14800 - Steele Brook - 0.0160
-14444 - Saugatuck River - 0.0318
-14441 - Salmon River - 0.0374
-14414 - Quinnipiac River - 0.0033
-Sites with 0.05 < p-value < 0.1:
-16335 - Nonewaug (Nonnewaug River) - 0.0903
-16139 - Brown Brook - 0.0725
-15315 - Burnham Brook - 0.0546
-14706 - Whitford Brook - 0.0621
-14584 - Roaring Brook - 0.0808
-14461 - Sandy Brook (Still River) - 0.0501
 
 
 Seasonal Mann-Kendall Trend Test for Bioperiods Steps:
@@ -130,25 +86,102 @@ Pages consisting of 3x3 scatter plots will be produced containing the year on th
 Six dots can be expected per year for sites with all bioperiods of data.
 Threshold lines are drawn for comparison, and Theil-Sen slopes are shown with a trendline.
 A comparison heatmap is also drawn to show how many years of data each bioperiod has for each site.
-Sites with p-value < 0.05:
-15796 - Pendleton Hill Brook - 0.0082
-15499 - West Branch Salmon Brook - 0.0473
-15315 - Burnham Brook - 0.0097
-15304 - Eagleville Brook - 0.0008
-15020 - Eightmile River - 0.0043
-14800 - Steele Brook - 0.0203
-14706 - Whitford Brook - 0.0216
-14441 - Salmon River - 0.0183
-Sites with 0.05 < p-value < 0.1:
-14720 - Green Fall River - 0.0891
-14461 - Sandy Brook (Still River) - 0.0645
-14451 - Shetucket River - 0.0721
-14444 - Saugatuck River - 0.0779
 
 
 Steps for Comparisons of Significant Values Across Tests:
 Results for each testing method are given a column indicating the test and then filtered to only those sites with a p-value of less thna 0.1.
 Rows of the results are bound and a pivot table is created which shows the test method, the site, and the p-value.
-A tile plot is created for ease of viewing
+A tile plot is created for ease of viewing.
 The bound dataframe is filtered to p-values < 0.05 and the process is repeated.
 
+
+
+
+
+Documentation of bar_charts.R:
+
+Required libraries:
+tidyverse
+broom
+ggforce
+patchwork
+
+Helpers and constants:
+temp_category is a function that assigns Cold, Cool, and Warm temperature categories based on the temperature thresholds.
+
+COLD_MAX is set to 18.29, the maximum value considered to be cold water for fish communities.
+WARM_MIN is set to 21.70, the minimum value considered to be warm water for fish communities.
+
+THRESHOLD_LINES_LEGEND is a tibble used as labels for the plots.
+THRESHOLD_COLORS defines the colors used in the charts for each threshold.
+THRESHOLD_LINETYPES sets solid lines to use in the plots.
+
+clean_sites is a function that takes a dataframe, standardizes STA_SEQ as a character, and selects it as well as the WaterbodyName.
+
+
+Initial Steps:
+The temperature data is read in from the csv along with the list of sites and a landscape cover file.
+Temperature data is cleaned with clean_sites.
+Daily mean temperatures are calculated for each site on a certain date, and sites are joined to the waterbody name.
+The summer averages are calculated by filtering the data down to June-August, grouping by site, year, and waterbody name, then calculating mean.
+Temperature category is assigned.
+
+Steps for bar charts:
+Sites with less than 10 years of data are filtered out.
+Data is given a year group of a 5 year range (ex. 2000 - 2004, 2015-2019, etc.).
+Means and medians are calculated for the year groups.
+Mean or median can be selected interchangeably as the desired method for average.
+A summary is produced grouped by site showing the minimum and maximum temperatures.
+Threshold lines are decided upon based upon the range of the data present.
+Pages consisting of 3x3 column plots are created with the 5-year period on the x-axis and the average summer temperature on the y-axis.
+The number of years in each 5-year period are displayed over their columns.
+
+
+
+
+
+Documentation of timeline_heatmaps.R:
+
+Required libraries:
+tidyverse
+broom
+ggforce
+patchwork
+
+Helpers and constants:
+temp_category is a function that assigns Cold, Cool, and Warm temperature categories based on the temperature thresholds (<18.29 for Cold Water, >18.29 and <21.70 for Cool Water, and >21.70 for Warm Water).
+
+clean_sites is a function that takes a dataframe, standardizes STA_SEQ as a character, and selects it as well as the WaterbodyName.
+
+Initial Steps:
+The temperature data is read in from the csv along with the list of sites and a landscape cover file.
+Temperature data is cleaned with clean_sites.
+Daily mean temperatures are calculated for each site on a certain date, and sites are joined to the waterbody name.
+
+Steps to produce heatmap of temperature categories in a specific year:
+A target year is first declared.
+Daily means are filtered down to the target year and only for June-August.
+The top 30 sites with the most coverage are calculated.
+The daily means are further filtered down to the top 30 sites by coverage.
+A heatmap is created with the date range from June 1 through August 31.
+The top 30 sites are displayed as well as their daily mean temperature categories over the summer.
+
+Steps to produce heatmap of summer temperature categories over all years:
+Daily means are filtered down to June-August, grouped by site and year, and mean temperatures are calculated.
+Temperature categories are assigned (Cold, Cool, and Warm).
+The top 30 sites with the most years of data are calculated.
+A heatmap is created ranging across all years for which there are data.
+The top 30 sites are displayed as well as their mean temperature categories over the summer.
+A continuous heatmap is also made that plots the same information but with actual temperature values instead of categories.
+
+Misc plots/processes:
+Summer average temperatures are calculated.
+Top 4 sites by amount of summer coverage are calculated.
+A dot plot with a line connecting the points and a trendline is produced to show the temperature change over time.
+
+The same process is done but for the overall summer temperature trend across all sites.
+
+Regex can be used to determine Waterbody type.
+
+Slopes of all longterm sites for summer averages are calculated.
+The trendline for the sites with the highest 5 slopes and their data points are plotted as the most extreme summer temperatures.

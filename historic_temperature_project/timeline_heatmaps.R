@@ -2,7 +2,6 @@
 library(tidyverse)
 library(broom)
 library(ggforce)
-library(Kendall)
 library(patchwork)
 
 #Helper function for temperature category
@@ -37,7 +36,7 @@ daily_means = initial_data %>%
   ) %>%
   group_by(staSeq, date, year, month) %>%
   summarise(mean_temp = mean(temp, na.rm = TRUE), .groups = "drop") %>%
-  filter(staSeq %in% landscape_cover$staSeq) %>%
+  #filter(staSeq %in% landscape_cover$staSeq) %>%
   left_join(
     sites_clean %>%
       select(STA_SEQ, WaterbodyName),
@@ -49,10 +48,6 @@ daily_means = initial_data %>%
 
 #Target year
 target_year = 2019
-
-# Prepare daily means for June–August
-daily_means_summer_2019 = daily_means %>%
-  filter(year == target_year, month %in% 6:8)
 
 rm(initial_data)
 
@@ -101,12 +96,6 @@ ggplot(daily_means_summer_2019_top, aes(
     panel.grid = element_blank()
   )
 
-#July temperature
-july_avg = daily_means %>%
-  filter(month(date) == 7) %>%
-  group_by(staSeq, year) %>%
-  summarise(avg_temp = mean(mean_temp, na.rm = TRUE))
-
 #Plotting June-August Temperatures over the years
 summer_avg_all = daily_means %>%
   filter(month %in% 6:8) %>%
@@ -143,90 +132,6 @@ ggplot(summer_avg_top, aes(
     axis.text.y = element_text(size = 6),
     panel.grid = element_blank()
   )
-
-
-
-
-#Plotting Temperatures at specific sites over the years
-ansel_sites = read_csv("/home/deepuser/Documents/temp_categories_31_sites.csv") %>%
-  mutate(AWQ = as.character(AWQ))
-
-avg_ansel_summer = ansel_sites %>%
-  left_join(summer_avg_all, by = c("AWQ" = "staSeq")) %>%
-  mutate(staSeq_waterbodyName = paste(AWQ, "-", `Station Name`))
-
-avg_all = daily_means %>%
-  group_by(staSeq, year, WaterbodyName) %>%
-  summarise(avg_temp = mean(mean_temp, na.rm = TRUE), .groups = "drop") %>%
-  mutate(category = temp_category(avg_temp)) %>%
-  select(-WaterbodyName)
-
-avg_ansel = ansel_sites %>%
-  left_join(avg_all, by = c("AWQ" = "staSeq")) %>%
-  mutate(staSeq_waterbodyName = paste(AWQ, "-", `Station Name`))
-
-values_to_keep = c("14316", "14317", "14341", "14410", "14413", "14442", "14484", "14581", "14605", "15312", "16119", "16124", "16127", "16128")
-ansel_subset = avg_ansel %>%
-  filter(AWQ %in% values_to_keep)
-ansel_summer_subset = avg_ansel_summer %>%
-  filter(AWQ %in% values_to_keep)
-
-
-#Heatmap: categorical
-ggplot(ansel_summer_subset, aes(
-  x = year,
-  y = staSeq_waterbodyName,
-  fill = category
-)) +
-  geom_tile(width = 1, height = 0.8) +
-  scale_fill_manual(values = c(
-    "Cold" = "blue",
-    "Cool" = "cornflowerblue",
-    "Warm" = "red"
-  )) +
-  labs(
-    title = "Mean Summer (June-August) Water Temperatures - HOBO 2019 Removals on Long-Term Trend List",
-    x = "Year",
-    y = "Site (Waterbody)"
-  ) +
-  theme_minimal() +
-  theme(
-    axis.text.y = element_text(size = 6),
-    panel.grid = element_blank()
-  )
-
-summer_summary = avg_ansel_summer %>%
-  count(AWQ, `Station Name`, category) %>%
-  group_by(AWQ, `Station Name`) %>%
-  slice_max(n, n = 1, with_ties = FALSE) %>%
-  ungroup()
-
-year_round_with_summer_cat = avg_ansel %>%
-  left_join(
-    summer_summary %>% select(AWQ, predominant_summer = category),
-    by = "AWQ"
-  )
-
-cool_sites = year_round_with_summer_cat %>%
-  filter(predominant_summer == "Cool")
-
-cold_sites = year_round_with_summer_cat %>%
-  filter(predominant_summer == "Cold")
-
-warm_sites = year_round_with_summer_cat %>%
-  filter(predominant_summer == "Warm")
-
-no_data_sites = year_round_with_summer_cat %>%
-  filter(is.na(predominant_summer))
-
-write_csv(cool_sites, "/home/deepuser/Documents/sites_cool.csv")
-write_csv(cold_sites, "/home/deepuser/Documents/sites_cold.csv")
-write_csv(warm_sites, "/home/deepuser/Documents/sites_warm.csv")
-write_csv(no_data_sites, "/home/deepuser/Documents/sites_nodata.csv")
-
-
-
-
 
 
 

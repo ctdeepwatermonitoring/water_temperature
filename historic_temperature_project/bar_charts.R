@@ -2,7 +2,6 @@
 library(tidyverse)
 library(broom)
 library(ggforce)
-library(Kendall)
 library(patchwork)
 
 #Helper function for temperature category
@@ -56,7 +55,7 @@ daily_means = initial_data %>%
   ) %>%
   group_by(staSeq, date, year, month) %>%
   summarise(mean_temp = mean(temp, na.rm = TRUE), .groups = "drop") %>%
-  filter(staSeq %in% landscape_cover$staSeq) %>%
+  #filter(staSeq %in% landscape_cover$staSeq) %>%
   left_join(
     sites_clean %>%
       select(STA_SEQ, WaterbodyName),
@@ -86,6 +85,9 @@ summer_avg_longterm = summer_avg_longterm %>%
     year_group = paste0(year_group_start, "-", year_group_end)
   )
 
+temp_stat = "median"
+temp_label = ifelse(temp_stat == "mean", "Mean", "Median")
+
 summer_5yr_summary = summer_avg_longterm %>%
   group_by(staSeq, WaterbodyName, year_group) %>%
   summarise(
@@ -93,6 +95,10 @@ summer_5yr_summary = summer_avg_longterm %>%
     median_temp = median(avg_temp, na.rm = TRUE),
     n_years = n(),
     .groups = "drop"
+  ) %>%
+  mutate(
+    temp_value = if (temp_stat == "mean") mean_temp else median_temp,
+    facet_label = paste(staSeq, "-", WaterbodyName)
   )
 
 summer_5yr_summary = summer_5yr_summary %>%
@@ -101,8 +107,8 @@ summer_5yr_summary = summer_5yr_summary %>%
 site_ranges = summer_5yr_summary %>%
   group_by(staSeq, WaterbodyName, facet_label) %>%
   summarise(
-    min_temp = min(mean_temp, na.rm = TRUE),
-    max_temp = max(mean_temp, na.rm = TRUE),
+    min_temp = min(temp_value, na.rm = TRUE),
+    max_temp = max(temp_value, na.rm = TRUE),
     .groups = "drop"
   )
 
@@ -174,7 +180,7 @@ for (facet in names(site_list)) {
     line_type = c("Cold threshold (18.29°C)", "Warm threshold (21.70°C)")
   )
   
-  p = ggplot(df, aes(x = year_group, y = mean_temp)) +
+  p = ggplot(df, aes(x = year_group, y = temp_value)) +
     geom_hline(
       data = threshold_lines,
       aes(yintercept = yintercept, color = line_type, linetype = line_type),
@@ -190,14 +196,14 @@ for (facet in names(site_list)) {
     ) +
     geom_col(fill = "gray70") +
     geom_text(
-      aes(label = paste0("n = ", n_years), y = mean_temp + 0.5),
+      aes(label = paste0("n = ", n_years), y = temp_value + 0.5),
       vjust = 0.3,
       size = 3.5
     ) +
     labs(
       title = facet,
       x = "5-Year Period",
-      y = "Mean Summer Temperature (°C)",
+      y = paste(temp_label, "Summer Temperature (°C)"),
       color = "Temperature thresholds",
       linetype = "Temperature thresholds"
     ) +
@@ -222,12 +228,21 @@ for (facet in names(site_list)) {
 plots_per_page = 9
 n_pages = ceiling(length(plots) / plots_per_page)
 
+page_plots = vector("list", n_pages)
+
 for (i in seq_len(n_pages)) {
   idx = ((i - 1) * plots_per_page + 1):(min(i * plots_per_page, length(plots)))
-  page_plot = wrap_plots(plots[idx], ncol = 3, nrow = 3, guides = "collect") +
+  page_plots[[i]] = wrap_plots(plots[idx], ncol = 3, nrow = 3, guides = "collect") +
     plot_annotation(
-      title = paste("5-Year Mean Summer Water Temperatures by Site (Page", i, "of", n_pages, ")")
+      title = paste("5-Year", temp_label, "Water Temperatures by Site (Page", i, "of", n_pages, ")")
     ) &
     theme(legend.position = "bottom")
-  print(page_plot)
 }
+page_plots[[1]]
+page_plots[[2]]
+page_plots[[3]]
+page_plots[[4]]
+page_plots[[5]]
+page_plots[[6]]
+page_plots[[7]]
+page_plots[[8]]
