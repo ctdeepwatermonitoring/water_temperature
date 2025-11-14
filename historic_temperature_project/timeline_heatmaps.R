@@ -51,6 +51,14 @@ target_year = 2019
 
 rm(initial_data)
 
+out_dir_base = file.path("/home/deepuser/ContDataQC/historic_temperature_project", "outputs")
+dir.create(out_dir_base, recursive = TRUE, showWarnings = FALSE)
+
+make_safe_filename = function(x) {
+  x = iconv(x, to = "ASCII//TRANSLIT")
+  gsub("[^A-Za-z0-9_\\-]", "_", x)
+}
+
 # Calculating daily means
 daily_means_summer_2019 = daily_means %>%
   filter(year == target_year, month %in% 6:8) %>%
@@ -68,7 +76,7 @@ daily_means_summer_2019_top = daily_means_summer_2019 %>%
   filter(staSeq %in% top_sites)
 
 # Heatmap of temperature categories in a specific year
-ggplot(daily_means_summer_2019_top, aes(
+p_daily_heatmap_2019 = ggplot(daily_means_summer_2019_top, aes(
   x = date,
   y = staSeq_waterbodyName,
   fill = category
@@ -96,6 +104,12 @@ ggplot(daily_means_summer_2019_top, aes(
     panel.grid = element_blank()
   )
 
+# save
+timeline_out_dir = file.path(out_dir_base, "timeline_heatmaps")
+dir.create(timeline_out_dir, recursive = TRUE, showWarnings = FALSE)
+fname = file.path(timeline_out_dir, "daily_mean_heatmap_2019.png")
+ggsave(fname, plot = p_daily_heatmap_2019, width = 12, height = 10, dpi = 300)
+
 #Plotting June-August Temperatures over the years
 summer_avg_all = daily_means %>%
   filter(month %in% 6:8) %>%
@@ -115,7 +129,7 @@ summer_avg_top = summer_avg_all %>%
   mutate(staSeq_waterbodyName = paste(staSeq, "-", WaterbodyName))
 
 #Heatmap: categorical
-ggplot(summer_avg_top, aes(
+p_summer_categorical = ggplot(summer_avg_top, aes(
   x = year,
   y = fct_reorder(staSeq_waterbodyName, n_years),
   fill = category
@@ -133,12 +147,14 @@ ggplot(summer_avg_top, aes(
     panel.grid = element_blank()
   )
 
+fname = file.path(timeline_out_dir, "summer_categorical_heatmap.png")
+ggsave(fname, plot = p_summer_categorical, width = 10, height = 12, dpi = 300)
 
 
 
 
-#Heatmap: continuous
-ggplot(summer_avg_top, aes(
+
+p_summer_continuous = ggplot(summer_avg_top, aes(
   x = year,
   y = fct_reorder(staSeq_waterbodyName, n_years),
   fill = avg_temp
@@ -155,6 +171,9 @@ ggplot(summer_avg_top, aes(
     axis.text.y = element_text(size = 6),
     panel.grid = element_blank()
   )
+
+fname = file.path(timeline_out_dir, "summer_continuous_heatmap.png")
+ggsave(fname, plot = p_summer_continuous, width = 10, height = 12, dpi = 300)
 
 
 #June-august temperature
@@ -178,7 +197,7 @@ summer_avg_top4 = summer_avg %>%
   mutate(staSeq_waterbodyName = paste(staSeq, "-", WaterbodyName))
 
 #Tracking temperature increase at top sites over time
-summer_avg_top4 %>%
+p_top4_trends = summer_avg_top4 %>%
   ggplot(aes(x = year, y = avg_temp)) +
   geom_line() +
   geom_point() +
@@ -191,6 +210,9 @@ summer_avg_top4 %>%
     y = "Mean Summer Temperature (°C)"
   )
 
+fname = file.path(timeline_out_dir, "top4_summer_trends.png")
+ggsave(fname, plot = p_top4_trends, width = 12, height = 8, dpi = 300)
+
 
 
 
@@ -199,7 +221,7 @@ overall_trend = summer_avg %>%
   group_by(year) %>%
   summarise(mean_temp = mean(avg_temp, na.rm = TRUE))
 
-ggplot(overall_trend, aes(x = year, y = mean_temp)) +
+p_overall_trend = ggplot(overall_trend, aes(x = year, y = mean_temp)) +
   geom_line() +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE, color = "red") +
@@ -209,6 +231,9 @@ ggplot(overall_trend, aes(x = year, y = mean_temp)) +
     y = "Mean Summer Temperature (°C)"
   ) +
   theme_minimal()
+
+fname = file.path(timeline_out_dir, "overall_summer_trend.png")
+ggsave(fname, plot = p_overall_trend, width = 8, height = 5, dpi = 300)
 
 #Subsetting waterbody type
 
@@ -267,7 +292,7 @@ summer_avg_extreme = summer_avg %>%
   filter(!is.na(slope))
 
 
-ggplot(summer_avg_extreme, aes(x = year, y = avg_temp)) +
+p_extreme_trends = ggplot(summer_avg_extreme, aes(x = year, y = avg_temp)) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE, color = "red") +
   facet_wrap(~ fct_reorder(staSeq_waterbodyName, slope, .na_rm = TRUE),
@@ -278,3 +303,6 @@ ggplot(summer_avg_extreme, aes(x = year, y = avg_temp)) +
     x = "Year",
     y = "Mean Summer Temperature (°C)"
   )
+
+fname = file.path(timeline_out_dir, "extreme_summer_trends.png")
+ggsave(fname, plot = p_extreme_trends, width = 12, height = 8, dpi = 300)

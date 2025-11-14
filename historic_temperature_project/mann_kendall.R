@@ -85,860 +85,813 @@ daily_means = initial_data %>%
   )
 
 
-#Mann-Kendall trend test
-temp_stat = "median"
+# Setup: loop over temp statistics and output folders
+temp_stats = c("mean", "median")
+out_dir_base = file.path("/home/deepuser/ContDataQC/historic_temperature_project", "outputs")
+dir.create(out_dir_base, recursive = TRUE, showWarnings = FALSE)
 
-temp_label = ifelse(temp_stat == "mean", "Mean", "Median")
+# helper to sanitize facet names for filenames
+make_safe_filename = function(x) {
+  x = iconv(x, to = "ASCII//TRANSLIT")
+  gsub("[^A-Za-z0-9_\\-]", "_", x)
+}
 
-#June-August temperature
-summer_avg = daily_means %>%
-  filter(month(date) %in% 6:8) %>%
-  group_by(staSeq, year) %>%
-  summarise(
-    median_temp = median(mean_temp, na.rm = TRUE),
-    mean_temp = mean(mean_temp, na.rm = TRUE), 
-    .groups = "drop"
+for (temp_stat in temp_stats) {
+  message(sprintf("Running analyses using temp_stat = '%s'", temp_stat))
+
+  #Mann-Kendall trend test
+  temp_label = ifelse(temp_stat == "mean", "Mean", "Median")
+  
+  #June-August temperature
+  summer_avg = daily_means %>%
+    filter(month(date) %in% 6:8) %>%
+    group_by(staSeq, year) %>%
+    summarise(
+      median_temp = median(mean_temp, na.rm = TRUE),
+      mean_temp = mean(mean_temp, na.rm = TRUE), 
+      .groups = "drop"
     ) %>%
-  mutate(temp_value = if (temp_stat == "mean") mean_temp else median_temp)
-
-mk_results_base = summer_avg %>%
-  group_by(staSeq) %>%
-  filter(n_distinct(year) >= 10) %>%
-  summarise(
-    n_years = n_distinct(year),
-    kendall = list(cor.test(year, temp_value, alternative = "two.sided", method = "kendall", continuity = TRUE)),
-    tau = kendall[[1]]$estimate,
-    p_value = kendall[[1]]$p.value,
-    theil_sen = theil_sen(temp_value, year)
-  ) %>%
-  ungroup()
-
-# Adding waterbody names
-mk_results = mk_results_base %>%
-  left_join(
-    sites_clean %>%
-      select(STA_SEQ, WaterbodyName),
-    by = c("staSeq" = "STA_SEQ")
-  )
-
-# Join averages
-mk_results = summer_avg %>%
-  filter(staSeq %in% mk_results$staSeq) %>%
-  left_join(mk_results %>% select(staSeq, WaterbodyName, tau, p_value, theil_sen), by = "staSeq") %>%
-  group_by(staSeq) %>%
-  mutate(intercept = median(temp_value) - theil_sen * median(year)) %>%
-  ungroup()
-
-# Label data
-label_data = mk_results %>%
-  group_by(staSeq) %>%
-  summarise(label = build_mk_label(cur_data_all()))
-
-#Summarized data
-mk_results_summary = mk_results %>%
-  group_by(staSeq, WaterbodyName) %>%
-  summarise(
-    n_year = n_distinct(year),
-    min_year = min(year, na.rm = TRUE),
-    max_year = max(year, na.rm = TRUE),
-    min_avg_temp = min(temp_value, na.rm = TRUE),
-    max_avg_temp = max(temp_value, na.rm = TRUE),
-    tau = first(na.omit(tau)),
-    p_value = first(na.omit(p_value)),
-    theil_sen = first(na.omit(theil_sen)),
-    intercept = first(na.omit(intercept)),
-    .groups = "drop"
-  )
-
-# Join labels
-mk_results_labeled = mk_results %>%
-  left_join(label_data, by = "staSeq") %>%
-  mutate(
-    facet_label = paste0(staSeq, " - ", WaterbodyName, "\n", label)
-  )
-
-# Temperature zones
-COLD_MAX = 18.29
-WARM_MIN = 21.70
-
-# Split data by facet
-mk_site_list = split(mk_results_labeled, mk_results_labeled$facet_label)
-mk_plots = list()
-for (facet in names(mk_site_list)) {
-  df = mk_site_list[[facet]]
-  min_temp = min(df$temp_value, na.rm = TRUE)
-  max_temp = max(df$temp_value, na.rm = TRUE)
-  y_min = min_temp - 1.5
-  y_max = max_temp + 1.5
+    mutate(temp_value = if (temp_stat == "mean") mean_temp else median_temp)
   
-  # Determine which threshold lines to draw
-  threshold_lines = tibble(
-    yintercept = c(COLD_MAX, WARM_MIN),
-    line_type = c("Cold threshold (18.29°C)", "Warm threshold (21.70°C)")
-  ) %>%
-    filter(
-      (line_type == "Cold threshold (18.29°C)" & y_min <= COLD_MAX & COLD_MAX <= y_max) |
-        (line_type == "Warm threshold (21.70°C)" & y_min <= WARM_MIN & WARM_MIN <= y_max)
-    )
-  # If no threshold lines would be drawn, always include the cold threshold line
-  if (nrow(threshold_lines) == 0) {
-    threshold_lines = tibble(
-      yintercept = COLD_MAX,
-      line_type = "Cold threshold (18.29°C)"
-    )
-  }
-  
-  p = ggplot(df, aes(x = year, y = temp_value)) +
-    geom_hline(
-      data = threshold_lines,
-      aes(yintercept = yintercept, color = line_type, linetype = line_type),
-      size = 1,
-      show.legend = TRUE
-    ) +
-    geom_hline(
-      data = THRESHOLD_LINES_LEGEND,
-      aes(yintercept = yintercept, color = line_type, linetype = line_type),
-      size = 1,
-      alpha = 0,
-      show.legend = TRUE
-    ) +
-    geom_point(color = "gray20") +
-    geom_line(color = "gray50") +
-    geom_abline(aes(intercept = intercept, slope = theil_sen),
-                size = 1.2, show.legend = FALSE) +
-    labs(
-      title = facet,
-      x = "Year",
-      y = paste0(temp_label, " Summer Temperature (°C)"),
-      color = "Temperature thresholds",
-      linetype = "Temperature thresholds"
-    ) +
-    scale_color_manual(
-      values = c("Cold threshold (18.29°C)" = "mediumturquoise", "Warm threshold (21.70°C)" = "indianred1")
-    ) +
-    scale_linetype_manual(
-      values = c("Cold threshold (18.29°C)" = "solid", "Warm threshold (21.70°C)" = "solid")
-    ) +
-    scale_y_continuous(limits = c(y_min, y_max), oob = rescale_none) +
-    theme_minimal(base_size = 10) +
-    theme(
-      strip.text = element_text(face = "bold"),
-      strip.background = element_rect(fill = "grey95", color = "grey80"),
-      panel.grid.minor = element_blank()
-    )
-  mk_plots[[facet]] = p
-}
-
-plots_per_page = 9
-n_pages = ceiling(length(mk_plots) / plots_per_page)
-
-page_plots = vector("list", n_pages)
-
-for (i in seq_len(n_pages)) {
-  idx = ((i - 1) * plots_per_page + 1):(min(i * plots_per_page, length(mk_plots)))
-  
-  page_plots[[i]] = wrap_plots(mk_plots[idx], ncol = 3, nrow = 3, guides = "collect") +
-    plot_annotation(
-      title = paste0("Summer Temperature Trends (", temp_label, ") – Theil-Sen Slopes (Page ", i, " of ", n_pages, ")")
-    ) &
-    theme(legend.position = "bottom")
-}
-page_plots[[1]]
-page_plots[[2]]
-page_plots[[3]]
-page_plots[[4]]
-page_plots[[5]]
-page_plots[[6]]
-page_plots[[7]]
-page_plots[[8]]
-
-
-
-
-
-
-#Seasonal Mann-Kendall trend test for summer months
-temp_stat = "median"
-
-temp_label = ifelse(temp_stat == "mean", "Mean", "Median")
-
-summer_months = daily_means %>%
-  filter(month %in% 6:8) %>%
-  group_by(staSeq, year, month) %>%
-  summarise(
-    median_temp = median(mean_temp, na.rm = TRUE),
-    mean_temp = mean(mean_temp, na.rm = TRUE),
-    .groups = "drop"
+  mk_results_base = summer_avg %>%
+    group_by(staSeq) %>%
+    filter(n_distinct(year) >= 10) %>%
+    summarise(
+      n_years = n_distinct(year),
+      kendall = list(cor.test(year, temp_value, alternative = "two.sided", method = "kendall", continuity = TRUE)),
+      tau = kendall[[1]]$estimate,
+      p_value = kendall[[1]]$p.value,
+      theil_sen = theil_sen(temp_value, year)
     ) %>%
-  mutate(temp_value = if (temp_stat == "mean") mean_temp else median_temp)
-
-seasonal_mk_envstats = function(df) {
-  if (n_distinct(df$year) < 10) {
-    return(tibble(tau = NA, p_value = NA, theil_sen = NA))
-  }
+    ungroup()
   
-  res = EnvStats::kendallSeasonalTrendTest(
-    y = df$temp_value,
-    year = df$year,
-    season = df$month
-  )
-  
-  tibble(
-    tau = res$estimate["tau"],
-    p_value = res$p.value["z (Trend)"],
-    theil_sen = res$estimate["slope"]
-  )
-}
-
-smk_results = summer_months %>%
-  group_by(staSeq) %>%
-  filter(n_distinct(year) >= 10) %>%
-  group_modify(~ seasonal_mk_envstats(.x)) %>%
-  ungroup() %>%
-  left_join(
-    sites_clean %>% select(STA_SEQ, WaterbodyName),
-    by = c("staSeq" = "STA_SEQ")
-  )
-
-smk_results_sig = smk_results %>%
-  filter(p_value < 0.1)
-
-smk_results = summer_months %>%
-  filter(staSeq %in% (smk_results %>% pull(staSeq))) %>%
-  left_join(smk_results %>% select(staSeq, WaterbodyName, tau, p_value, theil_sen), by = "staSeq") %>%
-  group_by(staSeq) %>%
-  mutate(intercept = median(temp_value) - theil_sen * median(year)) %>%
-  ungroup()
-
-smk_results_summary = smk_results %>%
-  group_by(staSeq, WaterbodyName) %>%
-  summarise(
-    n_year = n_distinct(year),
-    min_year = min(year, na.rm = TRUE),
-    max_year = max(year, na.rm = TRUE),
-    min_avg_temp = min(temp_value, na.rm = TRUE),
-    max_avg_temp = max(temp_value, na.rm = TRUE),
-    tau = first(na.omit(tau)),
-    p_value = first(na.omit(p_value)),
-    theil_sen = first(na.omit(theil_sen)),
-    intercept = first(na.omit(intercept)),
-    .groups = "drop"
-  )
-
-label_data = smk_results %>%
-  group_by(staSeq) %>%
-  summarise(label = build_mk_label(cur_data_all()))
-
-smk_results_labeled = smk_results %>%
-  left_join(label_data, by = "staSeq") %>%
-  mutate(
-    facet_label = paste0(staSeq, " - ", WaterbodyName, "\n", label)
-  )
-
-THRESHOLD_LINES_LEGEND = tibble(
-  yintercept = c(COLD_MAX, WARM_MIN),
-  line_type = c("Cold threshold (18.29°C)", "Warm threshold (21.70°C)")
-)
-
-smk_site_list = split(smk_results_labeled, smk_results_labeled$facet_label)
-smk_plots = list()
-
-for (facet in names(smk_site_list)) {
-  df = smk_site_list[[facet]]
-  min_temp = min(df$temp_value, na.rm = TRUE)
-  max_temp = max(df$temp_value, na.rm = TRUE)
-  y_min = min_temp - 1.5
-  y_max = max_temp + 1.6
-  
-  threshold_lines = tibble(
-    yintercept = c(COLD_MAX, WARM_MIN),
-    line_type = c("Cold threshold (18.29°C)", "Warm threshold (21.70°C)")
-  ) %>%
-    filter(
-      (line_type == "Cold threshold (18.29°C)" & y_min <= COLD_MAX & COLD_MAX <= y_max) |
-        (line_type == "Warm threshold (21.70°C)" & y_min <= WARM_MIN & WARM_MIN <= y_max)
+  # Adding waterbody names
+  mk_results = mk_results_base %>%
+    left_join(
+      sites_clean %>%
+        select(STA_SEQ, WaterbodyName),
+      by = c("staSeq" = "STA_SEQ")
     )
   
-  if (nrow(threshold_lines) == 0) {
+  # Join averages
+  mk_results = summer_avg %>%
+    filter(staSeq %in% mk_results$staSeq) %>%
+    left_join(mk_results %>% select(staSeq, WaterbodyName, tau, p_value, theil_sen), by = "staSeq") %>%
+    group_by(staSeq) %>%
+    mutate(intercept = median(temp_value) - theil_sen * median(year)) %>%
+    ungroup()
+  
+  # Label data
+  label_data = mk_results %>%
+    group_by(staSeq) %>%
+    summarise(label = build_mk_label(cur_data_all()))
+  
+  #Summarized data
+  mk_results_summary = mk_results %>%
+    group_by(staSeq, WaterbodyName) %>%
+    summarise(
+      n_year = n_distinct(year),
+      min_year = min(year, na.rm = TRUE),
+      max_year = max(year, na.rm = TRUE),
+      min_avg_temp = min(temp_value, na.rm = TRUE),
+      max_avg_temp = max(temp_value, na.rm = TRUE),
+      tau = first(na.omit(tau)),
+      p_value = first(na.omit(p_value)),
+      theil_sen = first(na.omit(theil_sen)),
+      intercept = first(na.omit(intercept)),
+      .groups = "drop"
+    )
+  
+  # Join labels
+  mk_results_labeled = mk_results %>%
+    left_join(label_data, by = "staSeq") %>%
+    mutate(
+      facet_label = paste0(staSeq, " - ", WaterbodyName, "\n", label)
+    )
+  
+  # Temperature zones
+  COLD_MAX = 18.29
+  WARM_MIN = 21.70
+  
+  # Split data by facet
+  mk_site_list = split(mk_results_labeled, mk_results_labeled$facet_label)
+  mk_plots = list()
+  for (facet in names(mk_site_list)) {
+    df = mk_site_list[[facet]]
+    min_temp = min(df$temp_value, na.rm = TRUE)
+    max_temp = max(df$temp_value, na.rm = TRUE)
+    y_min = min_temp - 1.5
+    y_max = max_temp + 1.5
+    
+    # Determine which threshold lines to draw
     threshold_lines = tibble(
-      yintercept = COLD_MAX,
-      line_type = "Cold threshold (18.29°C)"
-    )
-  }
-  
-  p = ggplot(df, aes(x = year, y = temp_value)) +
-    geom_hline(
-      data = threshold_lines,
-      aes(yintercept = yintercept, color = line_type, linetype = line_type),
-      size = 1,
-      show.legend = TRUE
-    ) +
-    geom_hline(
-      data = THRESHOLD_LINES_LEGEND,
-      aes(yintercept = yintercept, color = line_type, linetype = line_type),
-      size = 1,
-      alpha = 0,
-      show.legend = TRUE
-    ) +
-    geom_point(color = "gray20") +
-    geom_abline(aes(intercept = intercept, slope = theil_sen),
-                size = 1.2, show.legend = FALSE) +
-    labs(
-      title = facet,
-      x = "Year",
-      y = paste0(temp_label, " Summer Temperature (°C)"),
-      color = "Temperature thresholds",
-      linetype = "Temperature thresholds"
-    ) +
-    scale_color_manual(
-      values = c("Cold threshold (18.29°C)" = "mediumturquoise", "Warm threshold (21.70°C)" = "indianred1")
-    ) +
-    scale_linetype_manual(
-      values = c("Cold threshold (18.29°C)" = "solid", "Warm threshold (21.70°C)" = "solid")
-    ) +
-    scale_y_continuous(limits = c(y_min, y_max), oob = rescale_none) +
-    theme_minimal(base_size = 10) +
-    theme(
-      strip.text = element_text(face = "bold"),
-      strip.background = element_rect(fill = "grey95", color = "grey80"),
-      panel.grid.minor = element_blank()
-    )
-  
-  smk_plots[[facet]] = p
-}
-
-plots_per_page = 9
-n_pages = ceiling(length(smk_plots) / plots_per_page)
-
-page_plots = vector("list", n_pages)
-
-for (i in seq_len(n_pages)) {
-  idx = ((i - 1) * plots_per_page + 1):(min(i * plots_per_page, length(smk_plots)))
-  
-  page_plots[[i]] = wrap_plots(smk_plots[idx], ncol = 3, nrow = 3, guides = "collect") +
-    plot_annotation(
-      title = paste0("Seasonal Summer Temperature Trends (", temp_label, ") – Theil-Sen Slopes (Page ", i, " of ", n_pages, ")")
-    ) &
-    theme(legend.position = "bottom")
-}
-page_plots[[1]]
-page_plots[[2]]
-page_plots[[3]]
-page_plots[[4]]
-page_plots[[5]]
-page_plots[[6]]
-page_plots[[7]]
-page_plots[[8]]
-
-
-
-
-
-
-#Seasonal Mann-Kendall trend test for all seasons
-temp_stat = "median"
-
-temp_label = ifelse(temp_stat == "mean", "Mean", "Median")
-
-seasoned_month = function(month) {
-  case_when(
-    month %in% c(12, 1, 2)  ~ "DJF",
-    month %in% c(3, 4, 5)   ~ "MAM",
-    month %in% c(6, 7, 8)   ~ "JJA",
-    month %in% c(9, 10, 11) ~ "SON",
-    TRUE ~ NA_character_
-  )
-}
-
-seasonal_monthly = daily_means %>%
-  mutate(season = seasoned_month(month(date))) %>%
-  filter(!is.na(season)) %>%
-  group_by(staSeq, year, season) %>%
-  summarise(
-    median_temp = median(mean_temp, na.rm = TRUE),
-    mean_temp = mean(mean_temp, na.rm = TRUE),
-    .groups = "drop"
+      yintercept = c(COLD_MAX, WARM_MIN),
+      line_type = c("Cold threshold (18.29°C)", "Warm threshold (21.70°C)")
     ) %>%
-  mutate(temp_value = if (temp_stat == "mean") mean_temp else median_temp)
-
-
-#Exploring seasonal data gaps
-season_years = seasonal_monthly %>%
-  group_by(staSeq) %>%
-  filter(n_distinct(year) >= 10) %>%
-  ungroup() %>%
-  group_by(staSeq, season) %>%
-  summarise(n_years = n_distinct(year), .groups = "drop")
-
-season_years_wide = season_years %>%
-  pivot_wider(names_from = season, values_from = n_years, values_fill = 0)
-
-season_years %>%
-  ggplot(aes(x = season, y = staSeq, fill = n_years)) +
-  geom_tile() +
-  geom_text(aes(label = n_years), color = "white") +
-  scale_fill_viridis_c() +
-  theme_minimal() +
-  labs(title = "Distinct Years per Season per Site", fill = "Years")
-
-
-seasonal_mk_envstats_seasons = function(df) {
-  if (n_distinct(df$year) < 10) {
-    return(tibble(tau = NA, p_value = NA, theil_sen = NA))
+      filter(
+        (line_type == "Cold threshold (18.29°C)" & y_min <= COLD_MAX & COLD_MAX <= y_max) |
+          (line_type == "Warm threshold (21.70°C)" & y_min <= WARM_MIN & WARM_MIN <= y_max)
+      )
+    # If no threshold lines would be drawn, always include the cold threshold line
+    if (nrow(threshold_lines) == 0) {
+      threshold_lines = tibble(
+        yintercept = COLD_MAX,
+        line_type = "Cold threshold (18.29°C)"
+      )
+    }
+    
+    p = ggplot(df, aes(x = year, y = temp_value)) +
+      geom_hline(
+        data = threshold_lines,
+        aes(yintercept = yintercept, color = line_type, linetype = line_type),
+        size = 1,
+        show.legend = TRUE
+      ) +
+      geom_hline(
+        data = THRESHOLD_LINES_LEGEND,
+        aes(yintercept = yintercept, color = line_type, linetype = line_type),
+        size = 1,
+        alpha = 0,
+        show.legend = TRUE
+      ) +
+      geom_point(color = "gray20") +
+      geom_line(color = "gray50") +
+      geom_abline(aes(intercept = intercept, slope = theil_sen),
+                  size = 1.2, show.legend = FALSE) +
+      labs(
+        title = facet,
+        x = "Year",
+        y = paste0(temp_label, " Summer Temperature (°C)"),
+        color = "Temperature thresholds",
+        linetype = "Temperature thresholds"
+      ) +
+      scale_color_manual(
+        values = c("Cold threshold (18.29°C)" = "mediumturquoise", "Warm threshold (21.70°C)" = "indianred1")
+      ) +
+      scale_linetype_manual(
+        values = c("Cold threshold (18.29°C)" = "solid", "Warm threshold (21.70°C)" = "solid")
+      ) +
+      scale_y_continuous(limits = c(y_min, y_max), oob = rescale_none) +
+      theme_minimal(base_size = 10) +
+      theme(
+        strip.text = element_text(face = "bold"),
+        strip.background = element_rect(fill = "grey95", color = "grey80"),
+        panel.grid.minor = element_blank()
+      )
+    mk_plots[[facet]] = p
   }
   
-  res = EnvStats::kendallSeasonalTrendTest(
-    y = df$temp_value,
-    year = df$year,
-    season = df$season
-  )
+  mk_out_dir = file.path(out_dir_base, paste0("mk_standard_", temp_stat))
+  dir.create(mk_out_dir, recursive = TRUE, showWarnings = FALSE)
+  for (nm in names(mk_plots)) {
+    fname = file.path(mk_out_dir, paste0(make_safe_filename(nm), ".png"))
+    ggsave(fname, plot = mk_plots[[nm]], width = 8, height = 5, dpi = 300)
+  }
   
-  tibble(
-    tau = res$estimate["tau"],
-    p_value = res$p.value["z (Trend)"],
-    theil_sen = res$estimate["slope"]
-  )
-}
-
-smk_seasonal_results = seasonal_monthly %>%
-  group_by(staSeq) %>%
-  filter(n_distinct(year) >= 10) %>%
-  group_modify(~ seasonal_mk_envstats_seasons(.x)) %>%
-  ungroup() %>%
-  left_join(
-    sites_clean %>% select(STA_SEQ, WaterbodyName),
-    by = c("staSeq" = "STA_SEQ")
-  )
-
-smk_seasonal_sig = smk_seasonal_results %>% filter(p_value < 0.1)
-
-smk_seasonal_plot_df = seasonal_monthly %>%
-  filter(staSeq %in% (smk_seasonal_results %>% pull(staSeq))) %>%
-  left_join(smk_seasonal_results %>% select(staSeq, WaterbodyName, tau, p_value, theil_sen), by = "staSeq") %>%
-  group_by(staSeq) %>%
-  mutate(intercept = median(temp_value, na.rm = TRUE) - theil_sen * median(year, na.rm = TRUE)) %>%
-  ungroup()
-
-smk_seasonal_results_summary = smk_seasonal_plot_df %>%
-  group_by(staSeq, WaterbodyName) %>%
-  summarise(
-    n_year = n_distinct(year),
-    min_year = min(year, na.rm = TRUE),
-    max_year = max(year, na.rm = TRUE),
-    min_avg_temp = min(temp_value, na.rm = TRUE),
-    max_avg_temp = max(temp_value, na.rm = TRUE),
-    tau = first(na.omit(tau)),
-    p_value = first(na.omit(p_value)),
-    theil_sen = first(na.omit(theil_sen)),
-    intercept = first(na.omit(intercept)),
-    .groups = "drop"
-  )
-
-season_label_data = smk_seasonal_plot_df %>%
-  group_by(staSeq) %>%
-  summarise(label = build_mk_label(cur_data_all()))
-
-smk_seasonal_plot_labeled = smk_seasonal_plot_df %>%
-  left_join(season_label_data, by = "staSeq") %>%
-  mutate(facet_label = paste0(staSeq, " - ", WaterbodyName, "\n", label))
-
-legend_lines = tibble(
-  yintercept = c(COLD_MAX, WARM_MIN),
-  line_type = c(sprintf("Cold threshold (%.2f°C)", COLD_MAX), sprintf("Warm threshold (%.2f°C)", WARM_MIN))
-)
-
-smk_seasonal_site_list = split(smk_seasonal_plot_labeled, smk_seasonal_plot_labeled$facet_label)
-smk_seasonal_plots = list()
-
-for (facet in names(smk_seasonal_site_list)) {
-  df = smk_seasonal_site_list[[facet]]
-  min_temp = min(df$temp_value, na.rm = TRUE)
-  max_temp = max(df$temp_value, na.rm = TRUE)
-  y_min = min_temp - 1.5
-  y_max = max_temp + 1.6
   
-  threshold_lines = tibble(
+  
+  
+  
+  
+  #Seasonal Mann-Kendall trend test for summer months
+  temp_label = ifelse(temp_stat == "mean", "Mean", "Median")
+  
+  summer_months = daily_means %>%
+    filter(month %in% 6:8) %>%
+    group_by(staSeq, year, month) %>%
+    summarise(
+      median_temp = median(mean_temp, na.rm = TRUE),
+      mean_temp = mean(mean_temp, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    mutate(temp_value = if (temp_stat == "mean") mean_temp else median_temp)
+  
+  seasonal_mk_envstats = function(df) {
+    if (n_distinct(df$year) < 10) {
+      return(tibble(tau = NA, p_value = NA, theil_sen = NA))
+    }
+    
+    res = EnvStats::kendallSeasonalTrendTest(
+      y = df$temp_value,
+      year = df$year,
+      season = df$month
+    )
+    
+    tibble(
+      tau = res$estimate["tau"],
+      p_value = res$p.value["z (Trend)"],
+      theil_sen = res$estimate["slope"]
+    )
+  }
+  
+  smk_results = summer_months %>%
+    group_by(staSeq) %>%
+    filter(n_distinct(year) >= 10) %>%
+    group_modify(~ seasonal_mk_envstats(.x)) %>%
+    ungroup() %>%
+    left_join(
+      sites_clean %>% select(STA_SEQ, WaterbodyName),
+      by = c("staSeq" = "STA_SEQ")
+    )
+  
+  smk_results_sig = smk_results %>%
+    filter(p_value < 0.1)
+  
+  smk_results = summer_months %>%
+    filter(staSeq %in% (smk_results %>% pull(staSeq))) %>%
+    left_join(smk_results %>% select(staSeq, WaterbodyName, tau, p_value, theil_sen), by = "staSeq") %>%
+    group_by(staSeq) %>%
+    mutate(intercept = median(temp_value) - theil_sen * median(year)) %>%
+    ungroup()
+  
+  smk_results_summary = smk_results %>%
+    group_by(staSeq, WaterbodyName) %>%
+    summarise(
+      n_year = n_distinct(year),
+      min_year = min(year, na.rm = TRUE),
+      max_year = max(year, na.rm = TRUE),
+      min_avg_temp = min(temp_value, na.rm = TRUE),
+      max_avg_temp = max(temp_value, na.rm = TRUE),
+      tau = first(na.omit(tau)),
+      p_value = first(na.omit(p_value)),
+      theil_sen = first(na.omit(theil_sen)),
+      intercept = first(na.omit(intercept)),
+      .groups = "drop"
+    )
+  
+  label_data = smk_results %>%
+    group_by(staSeq) %>%
+    summarise(label = build_mk_label(cur_data_all()))
+  
+  smk_results_labeled = smk_results %>%
+    left_join(label_data, by = "staSeq") %>%
+    mutate(
+      facet_label = paste0(staSeq, " - ", WaterbodyName, "\n", label)
+    )
+  
+  THRESHOLD_LINES_LEGEND = tibble(
     yintercept = c(COLD_MAX, WARM_MIN),
     line_type = c("Cold threshold (18.29°C)", "Warm threshold (21.70°C)")
-  ) %>%
-    filter(
-      (line_type == "Cold threshold (18.29°C)" & y_min <= COLD_MAX & COLD_MAX <= y_max) |
-        (line_type == "Warm threshold (21.70°C)" & y_min <= WARM_MIN & WARM_MIN <= y_max)
-    )
+  )
   
-  if (nrow(threshold_lines) == 0) {
+  smk_site_list = split(smk_results_labeled, smk_results_labeled$facet_label)
+  smk_plots = list()
+  
+  for (facet in names(smk_site_list)) {
+    df = smk_site_list[[facet]]
+    min_temp = min(df$temp_value, na.rm = TRUE)
+    max_temp = max(df$temp_value, na.rm = TRUE)
+    y_min = min_temp - 1.5
+    y_max = max_temp + 1.6
+    
     threshold_lines = tibble(
-      yintercept = COLD_MAX,
-      line_type = "Cold threshold (18.29°C)"
+      yintercept = c(COLD_MAX, WARM_MIN),
+      line_type = c("Cold threshold (18.29°C)", "Warm threshold (21.70°C)")
+    ) %>%
+      filter(
+        (line_type == "Cold threshold (18.29°C)" & y_min <= COLD_MAX & COLD_MAX <= y_max) |
+          (line_type == "Warm threshold (21.70°C)" & y_min <= WARM_MIN & WARM_MIN <= y_max)
+      )
+    
+    if (nrow(threshold_lines) == 0) {
+      threshold_lines = tibble(
+        yintercept = COLD_MAX,
+        line_type = "Cold threshold (18.29°C)"
+      )
+    }
+    
+    p = ggplot(df, aes(x = year, y = temp_value)) +
+      geom_hline(
+        data = threshold_lines,
+        aes(yintercept = yintercept, color = line_type, linetype = line_type),
+        size = 1,
+        show.legend = TRUE
+      ) +
+      geom_hline(
+        data = THRESHOLD_LINES_LEGEND,
+        aes(yintercept = yintercept, color = line_type, linetype = line_type),
+        size = 1,
+        alpha = 0,
+        show.legend = TRUE
+      ) +
+      geom_point(color = "gray20") +
+      geom_abline(aes(intercept = intercept, slope = theil_sen),
+                  size = 1.2, show.legend = FALSE) +
+      labs(
+        title = facet,
+        x = "Year",
+        y = paste0(temp_label, " Summer Temperature (°C)"),
+        color = "Temperature thresholds",
+        linetype = "Temperature thresholds"
+      ) +
+      scale_color_manual(
+        values = c("Cold threshold (18.29°C)" = "mediumturquoise", "Warm threshold (21.70°C)" = "indianred1")
+      ) +
+      scale_linetype_manual(
+        values = c("Cold threshold (18.29°C)" = "solid", "Warm threshold (21.70°C)" = "solid")
+      ) +
+      scale_y_continuous(limits = c(y_min, y_max), oob = rescale_none) +
+      theme_minimal(base_size = 10) +
+      theme(
+        strip.text = element_text(face = "bold"),
+        strip.background = element_rect(fill = "grey95", color = "grey80"),
+        panel.grid.minor = element_blank()
+      )
+    
+    smk_plots[[facet]] = p
+  }
+  
+  smk_out_dir = file.path(out_dir_base, paste0("smk_summer_monthly_", temp_stat))
+  dir.create(smk_out_dir, recursive = TRUE, showWarnings = FALSE)
+  for (nm in names(smk_plots)) {
+    fname = file.path(smk_out_dir, paste0(make_safe_filename(nm), ".png"))
+    ggsave(fname, plot = smk_plots[[nm]], width = 8, height = 5, dpi = 300)
+  }
+  
+  
+  
+  
+  
+  
+  #Seasonal Mann-Kendall trend test for all seasons
+  temp_label = ifelse(temp_stat == "mean", "Mean", "Median")
+  
+  seasoned_month = function(month) {
+    case_when(
+      month %in% c(12, 1, 2)  ~ "DJF",
+      month %in% c(3, 4, 5)   ~ "MAM",
+      month %in% c(6, 7, 8)   ~ "JJA",
+      month %in% c(9, 10, 11) ~ "SON",
+      TRUE ~ NA_character_
     )
   }
   
-  p = ggplot(df, aes(x = year, y = temp_value)) +
-    geom_hline(
-      data = threshold_lines,
-      aes(yintercept = yintercept, color = line_type, linetype = line_type),
-      size = 1,
-      show.legend = TRUE
-    ) +
-    geom_hline(
-      data = THRESHOLD_LINES_LEGEND,
-      aes(yintercept = yintercept, color = line_type, linetype = line_type),
-      size = 1,
-      alpha = 0,
-      show.legend = TRUE
-    ) +
-    geom_point(color = "gray20") +
-    geom_abline(aes(intercept = intercept, slope = theil_sen),
-                size = 1.2, show.legend = FALSE) +
-    labs(
-      title = facet,
-      x = "Year",
-      y = paste(temp_label, "Season Temperature (°C)"),
-      color = "Temperature thresholds",
-      linetype = "Temperature thresholds"
-    ) +
-    scale_color_manual(
-      values = c("Cold threshold (18.29°C)" = "mediumturquoise", "Warm threshold (21.70°C)" = "indianred1")
-    ) +
-    scale_linetype_manual(
-      values = c("Cold threshold (18.29°C)" = "solid", "Warm threshold (21.70°C)" = "solid")
-    ) +
-    scale_y_continuous(limits = c(y_min, y_max), oob = rescale_none) +
-    theme_minimal(base_size = 10) +
-    theme(
-      strip.text = element_text(face = "bold"),
-      strip.background = element_rect(fill = "grey95", color = "grey80"),
-      panel.grid.minor = element_blank()
+  seasonal_monthly = daily_means %>%
+    mutate(season = seasoned_month(month(date))) %>%
+    filter(!is.na(season)) %>%
+    group_by(staSeq, year, season) %>%
+    summarise(
+      median_temp = median(mean_temp, na.rm = TRUE),
+      mean_temp = mean(mean_temp, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    mutate(temp_value = if (temp_stat == "mean") mean_temp else median_temp)
+  
+  
+  #Exploring seasonal data gaps
+  season_years = seasonal_monthly %>%
+    group_by(staSeq) %>%
+    filter(n_distinct(year) >= 10) %>%
+    ungroup() %>%
+    group_by(staSeq, season) %>%
+    summarise(n_years = n_distinct(year), .groups = "drop")
+  
+  season_years_wide = season_years %>%
+    pivot_wider(names_from = season, values_from = n_years, values_fill = 0)
+  
+  season_years_plot = season_years %>%
+    ggplot(aes(x = season, y = staSeq, fill = n_years)) +
+    geom_tile() +
+    geom_text(aes(label = n_years), color = "white") +
+    scale_fill_viridis_c() +
+    theme_minimal() +
+    labs(title = paste0("Distinct Years per Season per Site (", temp_label, ")"), fill = "Years")
+
+  # save season-year heatmap
+  data_gaps_out_dir = file.path(out_dir_base, paste0("data_gaps_", temp_stat))
+  dir.create(data_gaps_out_dir, recursive = TRUE, showWarnings = FALSE)
+  season_fname = file.path(data_gaps_out_dir, paste0("season_years_", temp_stat, ".png"))
+  ggsave(season_fname, plot = season_years_plot, width = 10, height = 12, dpi = 300)
+  
+  
+  seasonal_mk_envstats_seasons = function(df) {
+    if (n_distinct(df$year) < 10) {
+      return(tibble(tau = NA, p_value = NA, theil_sen = NA))
+    }
+    
+    res = EnvStats::kendallSeasonalTrendTest(
+      y = df$temp_value,
+      year = df$year,
+      season = df$season
     )
-  
-  smk_seasonal_plots[[facet]] = p
-}
-
-plots_per_page = 9
-n_pages = ceiling(length(smk_seasonal_plots) / plots_per_page)
-
-page_plots = vector("list", n_pages)
-
-for (i in seq_len(n_pages)) {
-  idx = ((i - 1) * plots_per_page + 1):(min(i * plots_per_page, length(smk_seasonal_plots)))
-  
-  page_plots[[i]] = wrap_plots(smk_seasonal_plots[idx], ncol = 3, nrow = 3, guides = "collect") +
-    plot_annotation(
-      title = paste0("Seasonal Temperature Trends (", temp_label, ") – Theil-Sen Slopes (Page ", i, " of ", n_pages, ")")
-    ) &
-    theme(legend.position = "bottom")
-}
-page_plots[[1]]
-page_plots[[2]]
-page_plots[[3]]
-page_plots[[4]]
-page_plots[[5]]
-page_plots[[6]]
-page_plots[[7]]
-page_plots[[8]]
-page_plots[[9]]
-
-
-
-
-
-
-
-#Seasonal Mann-Kendall trend test for bioperiods
-temp_stat = "median"
-
-temp_label = ifelse(temp_stat == "mean", "Mean", "Median")
-
-bioperiod_from_date = function(date) {
-  md = month(date) * 100 + day(date)
-  case_when(
-    md >= 1201 | md <= 228 ~ "Overwinter",
-    md >= 301 & md <= 430 ~ "Habitat Forming",
-    md >= 501 & md <= 531 ~ "Clupeid Spawning",
-    md >= 601 & md <= 630 ~ "Resident Spawning",
-    md >= 701 & md <= 1031 ~ "Rearing & Growth",
-    md >= 1101 & md <= 1130 ~ "Salmonid Spawning",
-    TRUE ~ NA_character_
-  )
-}
-
-seasonal_bioperiod = daily_means %>%
-  mutate(bioperiod = bioperiod_from_date(date)) %>%
-  filter(!is.na(bioperiod)) %>%
-  group_by(staSeq, year, bioperiod) %>%
-  summarise(
-    median_temp = median(mean_temp, na.rm = TRUE),
-    mean_temp = mean(mean_temp, na.rm = TRUE),
-    .groups = "drop"
-  ) %>%
-  mutate(temp_value = if (temp_stat == "mean") mean_temp else median_temp)
-
-#Exploring gaps in bioperiod
-bioperiod_years = seasonal_bioperiod %>%
-  group_by(staSeq) %>%
-  filter(n_distinct(year) >= 10) %>%
-  ungroup() %>%
-  group_by(staSeq, bioperiod) %>%
-  summarise(n_years = n_distinct(year), .groups = "drop")
-
-bioperiod_years_wide = bioperiod_years %>%
-  pivot_wider(names_from = bioperiod, values_from = n_years, values_fill = 0)
-
-bioperiod_years %>%
-  ggplot(aes(x = bioperiod, y = staSeq, fill = n_years)) +
-  geom_tile() +
-  geom_text(aes(label = n_years), color = "white") +
-  scale_fill_viridis_c() +
-  theme_minimal() +
-  labs(title = "Distinct Years per Season per Site", fill = "Years")
-
-seasonal_mk_envstats_bioperiod = function(df) {
-  if (n_distinct(df$year) < 10) {
-    return(tibble(tau = NA, p_value = NA, theil_sen = NA))
+    
+    tibble(
+      tau = res$estimate["tau"],
+      p_value = res$p.value["z (Trend)"],
+      theil_sen = res$estimate["slope"]
+    )
   }
   
-  res = EnvStats::kendallSeasonalTrendTest(
-    y = df$temp_value,
-    year = df$year,
-    season = df$bioperiod
-  )
+  smk_seasonal_results = seasonal_monthly %>%
+    group_by(staSeq) %>%
+    filter(n_distinct(year) >= 10) %>%
+    group_modify(~ seasonal_mk_envstats_seasons(.x)) %>%
+    ungroup() %>%
+    left_join(
+      sites_clean %>% select(STA_SEQ, WaterbodyName),
+      by = c("staSeq" = "STA_SEQ")
+    )
   
-  tibble(
-    tau = res$estimate["tau"],
-    p_value = res$p.value["z (Trend)"],
-    theil_sen = res$estimate["slope"]
-  )
-}
-
-smk_bioperiod_results = seasonal_bioperiod %>%
-  group_by(staSeq) %>%
-  filter(n_distinct(year) >= 10) %>%
-  group_modify(~ seasonal_mk_envstats_bioperiod(.x)) %>%
-  ungroup() %>%
-  left_join(
-    sites_clean %>% select(STA_SEQ, WaterbodyName),
-    by = c("staSeq" = "STA_SEQ")
-  )
-
-smk_bioperiod_sig = smk_bioperiod_results %>% filter(p_value < 0.1)
-
-smk_bioperiod_plot_df = seasonal_bioperiod %>%
-  filter(staSeq %in% (smk_bioperiod_results %>% pull(staSeq))) %>%
-  left_join(smk_bioperiod_results %>% select(staSeq, WaterbodyName, tau, p_value, theil_sen), by = "staSeq") %>%
-  group_by(staSeq) %>%
-  mutate(intercept = median(temp_value, na.rm = TRUE) - theil_sen * median(year, na.rm = TRUE)) %>%
-  ungroup()
-
-smk_bioperiod_results_summary = smk_bioperiod_plot_df %>%
-  group_by(staSeq, WaterbodyName) %>%
-  summarise(
-    n_year = n_distinct(year),
-    min_year = min(year, na.rm = TRUE),
-    max_year = max(year, na.rm = TRUE),
-    min_avg_temp = min(temp_value, na.rm = TRUE),
-    max_avg_temp = max(temp_value, na.rm = TRUE),
-    tau = first(na.omit(tau)),
-    p_value = first(na.omit(p_value)),
-    theil_sen = first(na.omit(theil_sen)),
-    intercept = first(na.omit(intercept)),
-    .groups = "drop"
-  )
-
-bioperiod_label_data = smk_bioperiod_plot_df %>%
-  group_by(staSeq) %>%
-  summarise(label = build_mk_label(cur_data_all()))
-
-smk_bioperiod_plot_labeled = smk_bioperiod_plot_df %>%
-  left_join(bioperiod_label_data, by = "staSeq") %>%
-  mutate(facet_label = paste0(staSeq, " - ", WaterbodyName, "\n", label))
-
-legend_lines = tibble(
-  yintercept = c(COLD_MAX, WARM_MIN),
-  line_type = c(sprintf("Cold threshold (%.2f°C)", COLD_MAX), sprintf("Warm threshold (%.2f°C)", WARM_MIN))
-)
-
-smk_bioperiod_site_list = split(smk_bioperiod_plot_labeled, smk_bioperiod_plot_labeled$facet_label)
-smk_bioperiod_plots = list()
-
-for (facet in names(smk_bioperiod_site_list)) {
-  df = smk_bioperiod_site_list[[facet]]
-  min_temp = min(df$temp_value, na.rm = TRUE)
-  max_temp = max(df$temp_value, na.rm = TRUE)
-  y_min = min_temp - 1.5
-  y_max = max_temp + 1.6
+  smk_seasonal_sig = smk_seasonal_results %>% filter(p_value < 0.1)
   
-  threshold_lines = tibble(
+  smk_seasonal_plot_df = seasonal_monthly %>%
+    filter(staSeq %in% (smk_seasonal_results %>% pull(staSeq))) %>%
+    left_join(smk_seasonal_results %>% select(staSeq, WaterbodyName, tau, p_value, theil_sen), by = "staSeq") %>%
+    group_by(staSeq) %>%
+    mutate(intercept = median(temp_value, na.rm = TRUE) - theil_sen * median(year, na.rm = TRUE)) %>%
+    ungroup()
+  
+  smk_seasonal_results_summary = smk_seasonal_plot_df %>%
+    group_by(staSeq, WaterbodyName) %>%
+    summarise(
+      n_year = n_distinct(year),
+      min_year = min(year, na.rm = TRUE),
+      max_year = max(year, na.rm = TRUE),
+      min_avg_temp = min(temp_value, na.rm = TRUE),
+      max_avg_temp = max(temp_value, na.rm = TRUE),
+      tau = first(na.omit(tau)),
+      p_value = first(na.omit(p_value)),
+      theil_sen = first(na.omit(theil_sen)),
+      intercept = first(na.omit(intercept)),
+      .groups = "drop"
+    )
+  
+  season_label_data = smk_seasonal_plot_df %>%
+    group_by(staSeq) %>%
+    summarise(label = build_mk_label(cur_data_all()))
+  
+  smk_seasonal_plot_labeled = smk_seasonal_plot_df %>%
+    left_join(season_label_data, by = "staSeq") %>%
+    mutate(facet_label = paste0(staSeq, " - ", WaterbodyName, "\n", label))
+  
+  legend_lines = tibble(
     yintercept = c(COLD_MAX, WARM_MIN),
-    line_type = c("Cold threshold (18.29°C)", "Warm threshold (21.70°C)")
-  ) %>%
-    filter(
-      (line_type == "Cold threshold (18.29°C)" & y_min <= COLD_MAX & COLD_MAX <= y_max) |
-        (line_type == "Warm threshold (21.70°C)" & y_min <= WARM_MIN & WARM_MIN <= y_max)
-    )
+    line_type = c(sprintf("Cold threshold (%.2f°C)", COLD_MAX), sprintf("Warm threshold (%.2f°C)", WARM_MIN))
+  )
   
-  if (nrow(threshold_lines) == 0) {
+  smk_seasonal_site_list = split(smk_seasonal_plot_labeled, smk_seasonal_plot_labeled$facet_label)
+  smk_seasonal_plots = list()
+  
+  for (facet in names(smk_seasonal_site_list)) {
+    df = smk_seasonal_site_list[[facet]]
+    min_temp = min(df$temp_value, na.rm = TRUE)
+    max_temp = max(df$temp_value, na.rm = TRUE)
+    y_min = min_temp - 1.5
+    y_max = max_temp + 1.6
+    
     threshold_lines = tibble(
-      yintercept = COLD_MAX,
-      line_type = "Cold threshold (18.29°C)"
+      yintercept = c(COLD_MAX, WARM_MIN),
+      line_type = c("Cold threshold (18.29°C)", "Warm threshold (21.70°C)")
+    ) %>%
+      filter(
+        (line_type == "Cold threshold (18.29°C)" & y_min <= COLD_MAX & COLD_MAX <= y_max) |
+          (line_type == "Warm threshold (21.70°C)" & y_min <= WARM_MIN & WARM_MIN <= y_max)
+      )
+    
+    if (nrow(threshold_lines) == 0) {
+      threshold_lines = tibble(
+        yintercept = COLD_MAX,
+        line_type = "Cold threshold (18.29°C)"
+      )
+    }
+    
+    p = ggplot(df, aes(x = year, y = temp_value)) +
+      geom_hline(
+        data = threshold_lines,
+        aes(yintercept = yintercept, color = line_type, linetype = line_type),
+        size = 1,
+        show.legend = TRUE
+      ) +
+      geom_hline(
+        data = THRESHOLD_LINES_LEGEND,
+        aes(yintercept = yintercept, color = line_type, linetype = line_type),
+        size = 1,
+        alpha = 0,
+        show.legend = TRUE
+      ) +
+      geom_point(color = "gray20") +
+      geom_abline(aes(intercept = intercept, slope = theil_sen),
+                  size = 1.2, show.legend = FALSE) +
+      labs(
+        title = facet,
+        x = "Year",
+        y = paste(temp_label, "Season Temperature (°C)"),
+        color = "Temperature thresholds",
+        linetype = "Temperature thresholds"
+      ) +
+      scale_color_manual(
+        values = c("Cold threshold (18.29°C)" = "mediumturquoise", "Warm threshold (21.70°C)" = "indianred1")
+      ) +
+      scale_linetype_manual(
+        values = c("Cold threshold (18.29°C)" = "solid", "Warm threshold (21.70°C)" = "solid")
+      ) +
+      scale_y_continuous(limits = c(y_min, y_max), oob = rescale_none) +
+      theme_minimal(base_size = 10) +
+      theme(
+        strip.text = element_text(face = "bold"),
+        strip.background = element_rect(fill = "grey95", color = "grey80"),
+        panel.grid.minor = element_blank()
+      )
+    
+    smk_seasonal_plots[[facet]] = p
+  }
+  
+  smk_seasonal_out_dir = file.path(out_dir_base, paste0("smk_seasons_", temp_stat))
+  dir.create(smk_seasonal_out_dir, recursive = TRUE, showWarnings = FALSE)
+  for (nm in names(smk_seasonal_plots)) {
+    fname = file.path(smk_seasonal_out_dir, paste0(make_safe_filename(nm), ".png"))
+    ggsave(fname, plot = smk_seasonal_plots[[nm]], width = 8, height = 5, dpi = 300)
+  }
+  
+  
+  
+  
+  
+  
+  
+  #Seasonal Mann-Kendall trend test for bioperiods
+  temp_label = ifelse(temp_stat == "mean", "Mean", "Median")
+  
+  bioperiod_from_date = function(date) {
+    md = month(date) * 100 + day(date)
+    case_when(
+      md >= 1201 | md <= 229 ~ "Overwinter",
+      md >= 301 & md <= 430 ~ "Habitat Forming",
+      md >= 501 & md <= 531 ~ "Clupeid Spawning",
+      md >= 601 & md <= 630 ~ "Resident Spawning",
+      md >= 701 & md <= 1031 ~ "Rearing & Growth",
+      md >= 1101 & md <= 1130 ~ "Salmonid Spawning",
+      TRUE ~ NA_character_
     )
   }
   
-  p = ggplot(df, aes(x = year, y = temp_value)) +
-    geom_hline(
-      data = threshold_lines,
-      aes(yintercept = yintercept, color = line_type, linetype = line_type),
-      size = 1,
-      show.legend = TRUE
-    ) +
-    geom_hline(
-      data = THRESHOLD_LINES_LEGEND,
-      aes(yintercept = yintercept, color = line_type, linetype = line_type),
-      size = 1,
-      alpha = 0,
-      show.legend = TRUE
-    ) +
-    geom_point(color = "gray20") +
-    geom_abline(aes(intercept = intercept, slope = theil_sen),
-                size = 1.2, show.legend = FALSE) +
-    labs(
-      title = facet,
-      x = "Year",
-      y = paste(temp_label, "Bioperiod Temperature (°C)"),
-      color = "Temperature thresholds",
-      linetype = "Temperature thresholds"
-    ) +
-    scale_color_manual(
-      values = c("Cold threshold (18.29°C)" = "mediumturquoise", "Warm threshold (21.70°C)" = "indianred1")
-    ) +
-    scale_linetype_manual(
-      values = c("Cold threshold (18.29°C)" = "solid", "Warm threshold (21.70°C)" = "solid")
-    ) +
-    scale_y_continuous(limits = c(y_min, y_max), oob = rescale_none) +
-    theme_minimal(base_size = 10) +
-    theme(
-      strip.text = element_text(face = "bold"),
-      strip.background = element_rect(fill = "grey95", color = "grey80"),
-      panel.grid.minor = element_blank()
+  seasonal_bioperiod = daily_means %>%
+    mutate(bioperiod = bioperiod_from_date(date)) %>%
+    filter(!is.na(bioperiod)) %>%
+    group_by(staSeq, year, bioperiod) %>%
+    summarise(
+      median_temp = median(mean_temp, na.rm = TRUE),
+      mean_temp = mean(mean_temp, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    mutate(temp_value = if (temp_stat == "mean") mean_temp else median_temp)
+  
+  #Exploring gaps in bioperiod
+  bioperiod_years = seasonal_bioperiod %>%
+    group_by(staSeq) %>%
+    filter(n_distinct(year) >= 10) %>%
+    ungroup() %>%
+    group_by(staSeq, bioperiod) %>%
+    summarise(n_years = n_distinct(year), .groups = "drop")
+  
+  bioperiod_years_wide = bioperiod_years %>%
+    pivot_wider(names_from = bioperiod, values_from = n_years, values_fill = 0)
+  
+  bioperiod_years_plot = bioperiod_years %>%
+    ggplot(aes(x = bioperiod, y = staSeq, fill = n_years)) +
+    geom_tile() +
+    geom_text(aes(label = n_years), color = "white") +
+    scale_fill_viridis_c() +
+    theme_minimal() +
+    labs(title = paste0("Distinct Years per Bioperiod per Site (", temp_label, ")"), fill = "Years")
+
+  # save bioperiod heatmap
+  bioperiod_fname = file.path(data_gaps_out_dir, paste0("bioperiod_years_", temp_stat, ".png"))
+  ggsave(bioperiod_fname, plot = bioperiod_years_plot, width = 10, height = 12, dpi = 300)
+  
+  seasonal_mk_envstats_bioperiod = function(df) {
+    if (n_distinct(df$year) < 10) {
+      return(tibble(tau = NA, p_value = NA, theil_sen = NA))
+    }
+    
+    res = EnvStats::kendallSeasonalTrendTest(
+      y = df$temp_value,
+      year = df$year,
+      season = df$bioperiod
+    )
+    
+    tibble(
+      tau = res$estimate["tau"],
+      p_value = res$p.value["z (Trend)"],
+      theil_sen = res$estimate["slope"]
+    )
+  }
+  
+  smk_bioperiod_results = seasonal_bioperiod %>%
+    group_by(staSeq) %>%
+    filter(n_distinct(year) >= 10) %>%
+    group_modify(~ seasonal_mk_envstats_bioperiod(.x)) %>%
+    ungroup() %>%
+    left_join(
+      sites_clean %>% select(STA_SEQ, WaterbodyName),
+      by = c("staSeq" = "STA_SEQ")
     )
   
-  smk_bioperiod_plots[[facet]] = p
-}
-
-plots_per_page = 9
-n_pages = ceiling(length(smk_bioperiod_plots) / plots_per_page)
-
-page_plots = vector("list", n_pages)
-
-for (i in seq_len(n_pages)) {
-  idx = ((i - 1) * plots_per_page + 1):(min(i * plots_per_page, length(smk_bioperiod_plots)))
+  smk_bioperiod_sig = smk_bioperiod_results %>% filter(p_value < 0.1)
   
-  page_plots[[i]] = wrap_plots(smk_bioperiod_plots[idx], ncol = 3, nrow = 3, guides = "collect") +
-    plot_annotation(
-      title = paste0("Bioperiod Temperature Trends (", temp_label, ") – Theil-Sen Slopes (Page ", i, " of ", n_pages, ")")
-    ) &
-    theme(legend.position = "bottom")
-}
-page_plots[[1]]
-page_plots[[2]]
-page_plots[[3]]
-page_plots[[4]]
-page_plots[[5]]
-page_plots[[6]]
-page_plots[[7]]
-page_plots[[8]]
-page_plots[[9]]
-
-
-
-
-
-
-
-
-# Comparisons of significant values
-mk_summer = mk_results_summary %>% filter(p_value < 0.1) %>% mutate(method = "Summer Standard MK")
-smk_summer_monthly = smk_results_sig %>% mutate(method = "Summer Monthly")
-smk_season = smk_seasonal_sig %>% mutate(method = "Seasons")
-smk_bioperiod = smk_bioperiod_sig %>% mutate(method = "Bioperiod")
-
-
-smk_combined = bind_rows(
-  mk_summer,
-  smk_summer_monthly,
-  smk_season,
-  smk_bioperiod
-) %>%
-  select(staSeq, WaterbodyName, method, p_value)
-
-smk_combined2 = smk_combined %>%
-  filter(p_value < 0.05)
-
-smk_compare = smk_combined %>%
-  tidyr::pivot_wider(
-    names_from = method,
-    values_from = p_value,
-    values_fill = NULL
+  smk_bioperiod_plot_df = seasonal_bioperiod %>%
+    filter(staSeq %in% (smk_bioperiod_results %>% pull(staSeq))) %>%
+    left_join(smk_bioperiod_results %>% select(staSeq, WaterbodyName, tau, p_value, theil_sen), by = "staSeq") %>%
+    group_by(staSeq) %>%
+    mutate(intercept = median(temp_value, na.rm = TRUE) - theil_sen * median(year, na.rm = TRUE)) %>%
+    ungroup()
+  
+  smk_bioperiod_results_summary = smk_bioperiod_plot_df %>%
+    group_by(staSeq, WaterbodyName) %>%
+    summarise(
+      n_year = n_distinct(year),
+      min_year = min(year, na.rm = TRUE),
+      max_year = max(year, na.rm = TRUE),
+      min_avg_temp = min(temp_value, na.rm = TRUE),
+      max_avg_temp = max(temp_value, na.rm = TRUE),
+      tau = first(na.omit(tau)),
+      p_value = first(na.omit(p_value)),
+      theil_sen = first(na.omit(theil_sen)),
+      intercept = first(na.omit(intercept)),
+      .groups = "drop"
+    )
+  
+  bioperiod_label_data = smk_bioperiod_plot_df %>%
+    group_by(staSeq) %>%
+    summarise(label = build_mk_label(cur_data_all()))
+  
+  smk_bioperiod_plot_labeled = smk_bioperiod_plot_df %>%
+    left_join(bioperiod_label_data, by = "staSeq") %>%
+    mutate(facet_label = paste0(staSeq, " - ", WaterbodyName, "\n", label))
+  
+  legend_lines = tibble(
+    yintercept = c(COLD_MAX, WARM_MIN),
+    line_type = c(sprintf("Cold threshold (%.2f°C)", COLD_MAX), sprintf("Warm threshold (%.2f°C)", WARM_MIN))
+  )
+  
+  smk_bioperiod_site_list = split(smk_bioperiod_plot_labeled, smk_bioperiod_plot_labeled$facet_label)
+  smk_bioperiod_plots = list()
+  
+  for (facet in names(smk_bioperiod_site_list)) {
+    df = smk_bioperiod_site_list[[facet]]
+    min_temp = min(df$temp_value, na.rm = TRUE)
+    max_temp = max(df$temp_value, na.rm = TRUE)
+    y_min = min_temp - 1.5
+    y_max = max_temp + 1.6
+    
+    threshold_lines = tibble(
+      yintercept = c(COLD_MAX, WARM_MIN),
+      line_type = c("Cold threshold (18.29°C)", "Warm threshold (21.70°C)")
+    ) %>%
+      filter(
+        (line_type == "Cold threshold (18.29°C)" & y_min <= COLD_MAX & COLD_MAX <= y_max) |
+          (line_type == "Warm threshold (21.70°C)" & y_min <= WARM_MIN & WARM_MIN <= y_max)
+      )
+    
+    if (nrow(threshold_lines) == 0) {
+      threshold_lines = tibble(
+        yintercept = COLD_MAX,
+        line_type = "Cold threshold (18.29°C)"
+      )
+    }
+    
+    p = ggplot(df, aes(x = year, y = temp_value)) +
+      geom_hline(
+        data = threshold_lines,
+        aes(yintercept = yintercept, color = line_type, linetype = line_type),
+        size = 1,
+        show.legend = TRUE
+      ) +
+      geom_hline(
+        data = THRESHOLD_LINES_LEGEND,
+        aes(yintercept = yintercept, color = line_type, linetype = line_type),
+        size = 1,
+        alpha = 0,
+        show.legend = TRUE
+      ) +
+      geom_point(color = "gray20") +
+      geom_abline(aes(intercept = intercept, slope = theil_sen),
+                  size = 1.2, show.legend = FALSE) +
+      labs(
+        title = facet,
+        x = "Year",
+        y = paste(temp_label, "Bioperiod Temperature (°C)"),
+        color = "Temperature thresholds",
+        linetype = "Temperature thresholds"
+      ) +
+      scale_color_manual(
+        values = c("Cold threshold (18.29°C)" = "mediumturquoise", "Warm threshold (21.70°C)" = "indianred1")
+      ) +
+      scale_linetype_manual(
+        values = c("Cold threshold (18.29°C)" = "solid", "Warm threshold (21.70°C)" = "solid")
+      ) +
+      scale_y_continuous(limits = c(y_min, y_max), oob = rescale_none) +
+      theme_minimal(base_size = 10) +
+      theme(
+        strip.text = element_text(face = "bold"),
+        strip.background = element_rect(fill = "grey95", color = "grey80"),
+        panel.grid.minor = element_blank()
+      )
+    
+    smk_bioperiod_plots[[facet]] = p
+  }
+  
+  smk_bioperiod_out_dir = file.path(out_dir_base, paste0("smk_bioperiod_", temp_stat))
+  dir.create(smk_bioperiod_out_dir, recursive = TRUE, showWarnings = FALSE)
+  for (nm in names(smk_bioperiod_plots)) {
+    fname = file.path(smk_bioperiod_out_dir, paste0(make_safe_filename(nm), ".png"))
+    ggsave(fname, plot = smk_bioperiod_plots[[nm]], width = 8, height = 5, dpi = 300)
+  }
+  
+  
+  
+  
+  
+  
+  
+  
+  # Comparisons of significant values
+  mk_summer = mk_results_summary %>% filter(p_value < 0.1) %>% mutate(method = "Summer Standard MK")
+  smk_summer_monthly = smk_results_sig %>% mutate(method = "Summer Monthly")
+  smk_season = smk_seasonal_sig %>% mutate(method = "Seasons")
+  smk_bioperiod = smk_bioperiod_sig %>% mutate(method = "Bioperiod")
+  
+  
+  smk_combined = bind_rows(
+    mk_summer,
+    smk_summer_monthly,
+    smk_season,
+    smk_bioperiod
   ) %>%
-  mutate(station_label = paste(staSeq, WaterbodyName, sep = " - "))
-
-smk_compare2 = smk_combined2 %>%
-  tidyr::pivot_wider(
-    names_from = method,
-    values_from = p_value,
-    values_fill = NULL
-  ) %>%
-  mutate(station_label = paste(staSeq, WaterbodyName, sep = " - "))
-
-# p-values < 0.1
-ggplot(
-  smk_compare %>%
-    tidyr::pivot_longer(
-      cols = c("Summer Standard MK", "Summer Monthly", "Seasons", "Bioperiod")
-    ),
-  aes(x = name, y = station_label)
-) +
-  geom_tile(fill = "white", color = "black", linewidth = 0.7) +
-  geom_text(aes(label = ifelse(is.na(value), "", sprintf("%.4f", value))),
-            size = 3.2, color = "black") +
-  labs(
-    title = "Comparison of Significant MK Results Using Median (p-values < 0.1)",
-    x = "SMK Method",
-    y = "Station"
+    select(staSeq, WaterbodyName, method, p_value)
+  
+  smk_combined2 = smk_combined %>%
+    filter(p_value < 0.05)
+  
+  smk_compare = smk_combined %>%
+    tidyr::pivot_wider(
+      names_from = method,
+      values_from = p_value,
+      values_fill = NULL
+    ) %>%
+    mutate(station_label = paste(staSeq, WaterbodyName, sep = " - "))
+  
+  smk_compare2 = smk_combined2 %>%
+    tidyr::pivot_wider(
+      names_from = method,
+      values_from = p_value,
+      values_fill = NULL
+    ) %>%
+    mutate(station_label = paste(staSeq, WaterbodyName, sep = " - "))
+  
+  # p-values < 0.1
+  comp_plot_01 = ggplot(
+    smk_compare %>%
+      tidyr::pivot_longer(
+        cols = c("Summer Standard MK", "Summer Monthly", "Seasons", "Bioperiod")
+      ),
+    aes(x = name, y = station_label)
   ) +
-  theme_minimal(base_size = 12) +
-  theme(
-    axis.text.x = element_text(angle = 45, hjust = 1),
-    panel.grid = element_blank()
-  )
+    geom_tile(fill = "white", color = "black", linewidth = 0.7) +
+    geom_text(aes(label = ifelse(is.na(value), "", sprintf("%.4f", value))),
+              size = 3.2, color = "black") +
+    labs(
+      title = paste0("Comparison of Significant MK Results Using ", temp_label, " (p-values < 0.1)"),
+      x = "SMK Method",
+      y = "Station"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1),
+      panel.grid = element_blank()
+    )
 
-# p-values < 0.05
-ggplot(
-  smk_compare2 %>%
-    tidyr::pivot_longer(
-      cols = c("Summer Standard MK", "Summer Monthly", "Seasons", "Bioperiod")
-    ),
-  aes(x = name, y = station_label)
-) +
-  geom_tile(fill = "white", color = "black", linewidth = 0.7) +
-  geom_text(aes(label = ifelse(is.na(value), "", sprintf("%.4f", value))),
-            size = 3.2, color = "black") +
-  labs(
-    title = "Comparison of Significant MK Results Using Median (p-values < 0.05)",
-    x = "SMK Method",
-    y = "Station"
+  # save comparison plot (p < 0.1)
+  comp_out_dir = file.path(out_dir_base, paste0("comparisons_", temp_stat))
+  dir.create(comp_out_dir, recursive = TRUE, showWarnings = FALSE)
+  comp01_fname = file.path(comp_out_dir, paste0("comparison_p_lt_0.1_", temp_stat, ".png"))
+  ggsave(comp01_fname, plot = comp_plot_01, width = 12, height = 8, dpi = 300)
+  
+  # p-values < 0.05
+  comp_plot_005 = ggplot(
+    smk_compare2 %>%
+      tidyr::pivot_longer(
+        cols = c("Summer Standard MK", "Summer Monthly", "Seasons", "Bioperiod")
+      ),
+    aes(x = name, y = station_label)
   ) +
-  theme_minimal(base_size = 12) +
-  theme(
-    axis.text.x = element_text(angle = 45, hjust = 1),
-    panel.grid = element_blank()
-  )
+    geom_tile(fill = "white", color = "black", linewidth = 0.7) +
+    geom_text(aes(label = ifelse(is.na(value), "", sprintf("%.4f", value))),
+              size = 3.2, color = "black") +
+    labs(
+      title = paste0("Comparison of Significant MK Results Using ", temp_label, " (p-values < 0.05)"),
+      x = "SMK Method",
+      y = "Station"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1),
+      panel.grid = element_blank()
+    )
 
+  # save comparison plot (p < 0.05)
+  comp005_fname = file.path(comp_out_dir, paste0("comparison_p_lt_0.05_", temp_stat, ".png"))
+  ggsave(comp005_fname, plot = comp_plot_005, width = 12, height = 8, dpi = 300)
+  
+}
 
-
-
-#Set differences
-setdiff(smk_seasonal_results_summary$staSeq, smk_bioperiod_results_summary$staSeq)
-setdiff(smk_bioperiod_results_summary$staSeq, smk_seasonal_results_summary$staSeq)
-
-setdiff(smk_results_summary$staSeq, smk_bioperiod_results_summary$staSeq)
-setdiff(smk_bioperiod_results_summary$staSeq, smk_results_summary$staSeq)

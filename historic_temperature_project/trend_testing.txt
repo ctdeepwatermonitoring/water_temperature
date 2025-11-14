@@ -33,10 +33,10 @@ Initial Steps:
 The temperature data is read in from the csv along with the list of sites and a landscape cover file.
 Temp data is cleaned with clean_sites.
 Daily mean temperatures are calculated for each site on a certain date, and sites are joined to the waterbody name.
+Below processes will repeat for mean and median.
 
 
 Mann-Kendall for Summer Temperature Trend Steps:
-Mean or median can be selected interchangeably as the desired method for average at the beginning of any of the Mann-Kendall tests in this file.
 Average temperatures for summer are calculated for each site each year from the daily means.
 Using the Kendall package, a Mann-Kendall trend test is conducted on temperature and year for sites with 10 or more years of data.
 The averages are joined to the results of the Mann-Kendall test and an intercept is calculated.
@@ -48,7 +48,6 @@ Threshold lines are drawn for comparison, and Theil-Sen slopes are shown with a 
 
 
 Seasonal Mann-Kendall Trend Test for Summer Months Steps:
-Mean or median can be selected interchangeably as the desired method for average at the beginning of any of the Mann-Kendall tests in this file.
 Average temperatures for each summer month are calculated individually for each site each year from the daily means.
 Using the EnvStats package, a Seasonal Mann-Kendall trend test is conducted on temperature and year for sites with 10 or more years of data, using each of the three summer months as seasons.
 The averages are joined to the results of the Seasonal Mann-Kendall test and an intercept is calculated.
@@ -61,7 +60,6 @@ Threshold lines are drawn for comparison, and Theil-Sen slopes are shown with a 
 
 
 Seasonal Mann-Kendall Trend Test for Meteorological Seasons Steps:
-Mean or median can be selected interchangeably as the desired method for average at the beginning of any of the Mann-Kendall tests in this file.
 Average temperatures for each meteorological season are calculated individually for each site each year from the daily means.
 Using the EnvStats package, a Seasonal Mann-Kendall trend test is conducted on temperature and year for sites with 10 or more years of data, using each of the four meteorological seasons as seasons.
 The averages are joined to the results of the Seasonal Mann-Kendall test and an intercept is calculated.
@@ -75,7 +73,6 @@ A comparison heatmap is also drawn to show how many years of data each season ha
 
 
 Seasonal Mann-Kendall Trend Test for Bioperiods Steps:
-Mean or median can be selected interchangeably as the desired method for average at the beginning of any of the Mann-Kendall tests in this file.
 Average temperatures for each bioperiod are calculated individually for each site each year from the daily means.
 Using the EnvStats package, a Seasonal Mann-Kendall trend test is conducted on temperature and year for sites with 10 or more years of data, using each of the six bioperiods as seasons.
 The averages are joined to the results of the Seasonal Mann-Kendall test and an intercept is calculated.

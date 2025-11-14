@@ -3,6 +3,7 @@ library(tidyverse)
 library(broom)
 library(ggforce)
 library(patchwork)
+library(scales)
 
 #Helper function for temperature category
 temp_category = function(temp, cold_thresh = 18.29, warm_thresh = 21.70) {
@@ -104,7 +105,24 @@ summer_5yr_summary = summer_avg_longterm %>%
 summer_5yr_summary = summer_5yr_summary %>%
   mutate(facet_label = paste(staSeq, "-", WaterbodyName))
 
-site_ranges = summer_5yr_summary %>%
+# prepare outputs and temp stats loop
+temp_stats = c("mean", "median")
+out_dir_base = file.path("/home/deepuser/ContDataQC/historic_temperature_project", "outputs")
+dir.create(out_dir_base, recursive = TRUE, showWarnings = FALSE)
+
+make_safe_filename = function(x) {
+  x = iconv(x, to = "ASCII//TRANSLIT")
+  gsub("[^A-Za-z0-9_\\-]", "_", x)
+}
+
+summer_5yr_summary_base = summer_5yr_summary
+
+for (temp_stat in temp_stats) {
+  temp_label = ifelse(temp_stat == "mean", "Mean", "Median")
+  summer_5yr_summary = summer_5yr_summary_base %>%
+    mutate(temp_value = if (temp_stat == "mean") mean_temp else median_temp)
+
+  site_ranges = summer_5yr_summary %>%
   group_by(staSeq, WaterbodyName, facet_label) %>%
   summarise(
     min_temp = min(temp_value, na.rm = TRUE),
@@ -225,24 +243,11 @@ for (facet in names(site_list)) {
   plots[[facet]] = p
 }
 
-plots_per_page = 9
-n_pages = ceiling(length(plots) / plots_per_page)
+  bar_out_dir = file.path(out_dir_base, paste0("bar_charts_", temp_stat))
+  dir.create(bar_out_dir, recursive = TRUE, showWarnings = FALSE)
+  for (nm in names(plots)) {
+    fname = file.path(bar_out_dir, paste0(make_safe_filename(nm), ".png"))
+    ggsave(fname, plot = plots[[nm]], width = 8, height = 5, dpi = 300)
+  }
 
-page_plots = vector("list", n_pages)
-
-for (i in seq_len(n_pages)) {
-  idx = ((i - 1) * plots_per_page + 1):(min(i * plots_per_page, length(plots)))
-  page_plots[[i]] = wrap_plots(plots[idx], ncol = 3, nrow = 3, guides = "collect") +
-    plot_annotation(
-      title = paste("5-Year", temp_label, "Water Temperatures by Site (Page", i, "of", n_pages, ")")
-    ) &
-    theme(legend.position = "bottom")
 }
-page_plots[[1]]
-page_plots[[2]]
-page_plots[[3]]
-page_plots[[4]]
-page_plots[[5]]
-page_plots[[6]]
-page_plots[[7]]
-page_plots[[8]]
