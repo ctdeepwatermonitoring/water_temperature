@@ -2,7 +2,7 @@ library(tidyverse)
 
 #Directories
 old_directory = "/home/deepuser/ContDataQC/historic_temperature_project/qced_data"
-new_directory = "/home/deepuser/TemperatureDB/testFTP/Upload/Cont_Data"
+new_directory = "/home/deepuser/ContDataQC/TemperatureDB/testFTP/Upload/Cont_Data"
 error_directory = "/home/deepuser/ContDataQC/historic_temperature_project/error_files"
 error_log = "/home/deepuser/ContDataQC/historic_temperature_project/error_files/error_log"
 script_name = "migration_prep2.R"

@@ -18,31 +18,31 @@ Not always required, but useful: Set GitHub credentials in the R environment usi
 File structure required for this program:
 
 home
-├── ContDataQC                                        #https://github.com/ctdeepwatermonitoring/water_temperature
-│   └── historic_temperature_project
-│       ├── csv_qc2.R
-│       ├── migration_prep2.R
-│       ├── config_deep2.R
-│       ├── data_to_qc
-│       ├── qced_data
-│       ├── raw_data                                  #DEPLOYMENT CSVS GO HERE
-│       ├── error_files
-│       │   └── error_log
-│       └── migration_folder
-└── TemperatureDB                                     #https://github.com/ctdeepwatermonitoring/TemperatureDB
-    └── db
-        ├── cnf
-        │   └── user.cnf.txt
-        ├── testFTP
-        │   └── Upload
-        │       ├── ContData
-        │       ├── ErrRpts
-        │       └── UploadedRpts
-        │           └── Temperature
-        │               └── Error
-        └── db_app
-            ├── driver.py
-            └── insert_temp_results_cross_platform.py
+└── ContDataQC                                        #https://github.com/ctdeepwatermonitoring/water_temperature
+    ├── historic_temperature_project
+    │   ├── csv_qc2.R
+    │   ├── migration_prep2.R
+    │   ├── config_deep2.R
+    │   ├── data_to_qc
+    │   ├── qced_data
+    │   ├── raw_data                                  #DEPLOYMENT CSVS GO HERE
+    │   ├── error_files
+    │   │   └── error_log
+    │   └── migration_folder
+    └── TemperatureDB
+        └── db
+            ├── cnf
+            │   └── user.cnf.txt
+            ├── testFTP
+            │   └── Upload
+            │       ├── ContData
+            │       ├── ErrRpts
+            │       └── UploadedRpts
+            │           └── Temperature
+            │               └── Error
+            └── db_app
+                ├── driver.py
+                └── insert_temp_results_cross_platform.py
 
 
 
@@ -54,6 +54,7 @@ run_qc under def main() is driver.py can be set to False to skip QC, if for exam
 Otherwise if run_qc is True it performs QC on the data.
 run_upload under def main() in driver.py can be set to False to stop after QC if a user would like to do EDA with qc_eda.R.
 Otherwise if run_upload is True it performs a few additional operations before uploading to the database.
+To run, cd to TemperatureDB directory and run /bin/python driver.py
 The rest of this documentation is for scripts used in the cleaning and upload process, as well as some documentation of EDA.
 
 
