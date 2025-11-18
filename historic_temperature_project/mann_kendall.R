@@ -59,7 +59,7 @@ build_mk_label = function(df) {
 #Read in the data
 initial_data = read_csv("/home/deepuser/ContDataQC/historic_temperature_project/temperature.csv")
 sites = read_csv("/home/deepuser/ContDataQC/historic_temperature_project/awx_stations_webservice(stations).csv")
-landscape_cover = read_csv("/home/deepuser/ContDataQC/historic_temperature_project/chloride_mmi_lc_2003_2020.csv")
+#landscape_cover = read_csv("/home/deepuser/ContDataQC/historic_temperature_project/chloride_mmi_lc_2003_2020.csv")
 
 #Clean the data
 sites_clean = clean_sites(sites)

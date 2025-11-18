@@ -30,6 +30,7 @@ build_mk_label is a function that creates labels from a dataframe using tau, slo
 
 
 Initial Steps:
+Temperature csv can be found on Sharepoint.
 The temperature data is read in from the csv along with the list of sites and a landscape cover file.
 Temp data is cleaned with clean_sites.
 Daily mean temperatures are calculated for each site on a certain date, and sites are joined to the waterbody name.
