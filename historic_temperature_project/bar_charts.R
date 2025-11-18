@@ -36,7 +36,6 @@ THRESHOLD_LINETYPES = setNames(
 #Read in the data
 initial_data = read_csv("/home/deepuser/ContDataQC/historic_temperature_project/temperature.csv")
 sites = read_csv("/home/deepuser/ContDataQC/historic_temperature_project/awx_stations_webservice(stations).csv")
-#landscape_cover = read_csv("/home/deepuser/ContDataQC/historic_temperature_project/chloride_mmi_lc_2003_2020.csv")
 
 #Clean sites data
 clean_sites = function(sites_df) {
@@ -56,7 +55,6 @@ daily_means = initial_data %>%
   ) %>%
   group_by(staSeq, date, year, month) %>%
   summarise(mean_temp = mean(temp, na.rm = TRUE), .groups = "drop") %>%
-  #filter(staSeq %in% landscape_cover$staSeq) %>%
   left_join(
     sites_clean %>%
       select(STA_SEQ, WaterbodyName),
